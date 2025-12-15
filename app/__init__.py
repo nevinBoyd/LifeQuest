@@ -17,5 +17,7 @@ def create_app():
     migrate.init_app(app, db)
 
     from app.models import models
-    
+    from app.routes.health import health_bp
+    app.register_blueprint(health_bp)
+
     return app

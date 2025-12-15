@@ -15,5 +15,7 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
+
+    from app.models import models
     
     return app

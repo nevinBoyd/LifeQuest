@@ -1,5 +1,3 @@
-from math import ceil
-
 # SUBTASK SUGGESTION CATEGORIES
 
 QUEST_CATEGORIES = {

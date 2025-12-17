@@ -11,7 +11,7 @@ instance/
 *.log
 
 # Flask / SQLAlchemy
-migrations/
+instance/
 *.db
 *.sqlite
 *.sqlite3

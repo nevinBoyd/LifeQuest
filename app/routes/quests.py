@@ -82,3 +82,33 @@ def finalize_quests(task_id):
             for q in created_quests
         ]
     }), 201
+
+@quests_bp.route("/tasks/<int:task_id>/quests", methods=["GET"])
+def get_task_quests(task_id):
+    user = get_or_create_default_user()
+
+    task = Task.query.filter_by(id=task_id, user_id=user.id).first()
+    if not task:
+        return jsonify({"error": "task not found"}), 404
+
+    quests = (
+        Quest.query
+        .filter_by(task_id=task.id)
+        .order_by(Quest.id)
+        .all()
+    )
+
+    return jsonify([
+        {
+            "id": q.id,
+            "text": q.text,
+            "difficulty": q.difficulty,
+            "estimated_time": q.estimated_time,
+            "bonus_window": q.bonus_window,
+            "base_xp": q.base_xp,
+            "completed": q.completed,
+            "started_at": q.started_at,
+            "completed_at": q.completed_at
+        }
+        for q in quests
+    ]), 200

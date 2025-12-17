@@ -18,6 +18,9 @@ def create_app():
 
     from app.models import models
     from app.routes.health import health_bp
+    from app.routes.tasks import tasks_bp
+
     app.register_blueprint(health_bp)
+    app.register_blueprint(tasks_bp)
 
     return app

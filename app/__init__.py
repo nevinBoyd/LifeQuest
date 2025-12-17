@@ -1,9 +1,5 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-
-db = SQLAlchemy()
-migrate = Migrate()
+from .extensions import db, migrate
 
 def create_app():
     app = Flask(__name__)
@@ -19,8 +15,10 @@ def create_app():
     from app.models import models
     from app.routes.health import health_bp
     from app.routes.tasks import tasks_bp
+    from app.routes.quests import quests_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(tasks_bp)
+    app.register_blueprint(quests_bp)
 
     return app

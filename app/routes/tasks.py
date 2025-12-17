@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app import db
-from app.models.models import User, Task
+from ..extensions import db
+from ..models.models import User, Task
 
 tasks_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
 

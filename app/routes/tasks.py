@@ -40,3 +40,43 @@ def create_task():
         ),
         201,
     )
+
+@tasks_bp.route("", methods=["GET"])
+def get_tasks():
+    user = get_or_create_default_user()
+
+    tasks = Task.query.filter_by(user_id=user.id).all()
+
+    return (
+        jsonify(
+            [
+                {
+                    "id": task.id,
+                    "title": task.title,
+                    "generated": task.generated,
+                }
+                for task in tasks
+            ]
+        ),
+        200,
+    )
+
+@tasks_bp.route("/<int:task_id>", methods=["GET"])
+def get_task(task_id):
+    user = get_or_create_default_user()
+
+    task = Task.query.filter_by(id=task_id, user_id=user.id).first()
+
+    if not task:
+        return jsonify({"error": "task not found"}), 404
+
+    return (
+        jsonify(
+            {
+                "id": task.id,
+                "title": task.title,
+                "generated": task.generated,
+            }
+        ),
+        200,
+    )

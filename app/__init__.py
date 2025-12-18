@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from .extensions import db, migrate
 
 def create_app():
@@ -7,6 +8,13 @@ def create_app():
     # Basic configuration
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///lifequest.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    # Enable CORS for frontend dev
+    CORS(
+    app,
+    resources={r"/*": {"origins": "http://localhost:5173"}},
+    supports_credentials=False,
+)
 
     # Initialize extensions
     db.init_app(app)

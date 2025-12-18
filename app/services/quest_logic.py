@@ -228,7 +228,6 @@ def build_initial_quest_plan(task_text: str):
         "base_xp": base_xp
     }
 
-
 def finalize_quest_plan(
     selected_subtasks: list[str],
     chosen_difficulty: str,

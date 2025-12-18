@@ -8,7 +8,6 @@ from ..services.quest_logic import (
 
 quests_bp = Blueprint("quests", __name__)
 
-
 def get_or_create_default_user():
     user = User.query.filter_by(username="default").first()
     if not user:
@@ -16,6 +15,24 @@ def get_or_create_default_user():
         db.session.add(user)
         db.session.commit()
     return user
+
+@quests_bp.route("/tasks/<int:task_id>/preview-quests", methods=["POST"])
+def preview_quests(task_id):
+    user = get_or_create_default_user()
+
+    task = Task.query.filter_by(id=task_id, user_id=user.id).first()
+    if not task:
+        return jsonify({"error": "task not found"}), 404
+
+    plan = build_initial_quest_plan(task.title)
+
+    return jsonify([
+        {
+            "id": idx,
+            "title": text
+        }
+        for idx, text in enumerate(plan["subtasks"], start=1)
+    ]), 200
 
 @quests_bp.route("/tasks/<int:task_id>/finalize-quests", methods=["POST"])
 def finalize_quests(task_id):

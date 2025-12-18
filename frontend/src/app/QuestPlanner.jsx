@@ -1,14 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function QuestPlanner({ task, onQuestsFinalized }) {
-  // Stub preview data until API wiring
-  const [previewQuests] = useState([
-    { id: 1, title: "Break task into steps" },
-    { id: 2, title: "Estimate time needed" },
-    { id: 3, title: "Start first action" },
-  ]);
-
+  const [previewQuests, setPreviewQuests] = useState([]);
   const [selectedQuestIds, setSelectedQuestIds] = useState([]);
+
+  useEffect(() => {
+    async function fetchPreviewQuests() {
+      const res = await fetch(
+        `http://127.0.0.1:5000/tasks/${task.id}/preview-quests`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) return;
+
+      const quests = await res.json();
+      setPreviewQuests(quests);
+    }
+
+    fetchPreviewQuests();
+  }, [task.id]);
 
   function toggleQuest(id) {
     setSelectedQuestIds((prev) =>

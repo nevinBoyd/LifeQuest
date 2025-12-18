@@ -3,21 +3,27 @@ import { useState } from "react";
 function TaskInput({ onTaskCreated }) {
   const [title, setTitle] = useState("");
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!title.trim()) return;
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) return;
 
-    // Temporary stub until API wiring
-    const task = {
-      id: Date.now(),
-      title: title.trim(),
-    };
+    const res = await fetch("http://localhost:5000/tasks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title: trimmedTitle }),
+    });
 
+    if (!res.ok) return;
+
+    const task = await res.json();
     onTaskCreated(task);
     setTitle("");
   }
-
+  
   return (
     <form onSubmit={handleSubmit}>
       <input

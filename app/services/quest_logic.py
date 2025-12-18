@@ -66,22 +66,55 @@ DIFFICULTY_VALUES = {
     "hard": 4
 }
 
+# INTENT REGISTRY
+
+INTENT_REGISTRY = {
+    "clean": [
+        "clean",
+        "laundry",
+        "do laundry",
+        "wash clothes",
+        "wash laundry",
+        "clothes",
+        "dirty clothes",
+        "tidy",
+        "pick up"
+    ],
+    "organize": [
+        "organize",
+        "sort",
+        "put away",
+        "declutter",
+        "arrange"
+    ],
+    "study": [
+        "study",
+        "review",
+        "exam",
+        "test"
+    ],
+    "write": [
+        "write",
+        "essay",
+        "paper",
+        "draft"
+    ],
+    "research": [
+        "research"
+    ]
+}
+
 # VERB + CONTEXT DETECTION
 
 def detect_verb(task_text: str) -> str:
     text = task_text.lower()
-    if "clean" in text:
-        return "clean"
-    if "organize" in text:
-        return "organize"
-    if "study" in text:
-        return "study"
-    if "essay" in text or "write" in text:
-        return "write"
-    if "research" in text:
-        return "research"
-    return "generic"
 
+    for intent, phrases in INTENT_REGISTRY.items():
+        for phrase in phrases:
+            if phrase in text:
+                return intent
+
+    return "generic"
 
 def detect_context(task_text: str) -> str:
     text = task_text.lower()
@@ -106,7 +139,6 @@ def detect_context(task_text: str) -> str:
 def suggest_time_for_verb(verb: str) -> int:
     return DEFAULT_VERB_TIMES.get(verb, 20)
 
-
 def generate_raw_subtasks(task_text: str) -> list[str]:
     verb = detect_verb(task_text)
     context = detect_context(task_text)
@@ -116,7 +148,6 @@ def generate_raw_subtasks(task_text: str) -> list[str]:
         if context in ctx_map:
             return ctx_map[context]
 
-    # Fallback
     return [
         f"Break '{task_text}' into smaller pieces",
         f"Do the simplest first step of '{task_text}'",
@@ -143,19 +174,13 @@ def suggest_difficulty_from_steps(verb: str, step_count: int) -> str:
 # MOTIVATION SCALING
 
 def adjust_for_motivation(base_min, base_max, motivation: str):
-    """
-    Motivation modifies step thresholds:
-    - low: user struggles → 25% fewer steps allowed
-    - high: user energized → 25% more steps allowed
-    """
-
     if motivation == "low":
         return max(1, int(base_min * 0.75)), max(1, int(base_max * 0.75))
 
     if motivation == "high":
         return int(base_min * 1.25), int(base_max * 1.25)
 
-    return base_min, base_max  # normal
+    return base_min, base_max
 
 
 def min_steps_for_difficulty(difficulty: str, motivation: str = "normal") -> int:
@@ -228,16 +253,16 @@ def build_initial_quest_plan(task_text: str):
         "base_xp": base_xp
     }
 
+
 def finalize_quest_plan(
     selected_subtasks: list[str],
     chosen_difficulty: str,
     chosen_minutes: int,
-    motivation: str = "normal"   # NEW PARAMETER
+    motivation: str = "normal"
 ):
     step_count = len(selected_subtasks)
     minutes = snap_to_five(chosen_minutes)
 
-    # Motivation-aware thresholds
     min_steps = min_steps_for_difficulty(chosen_difficulty, motivation)
     max_steps = max_steps_for_difficulty(chosen_difficulty, motivation)
 

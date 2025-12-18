@@ -104,6 +104,28 @@ INTENT_REGISTRY = {
     ]
 }
 
+ACTION_REGISTRY = {
+    "put_away": [
+        "put away",
+        "store",
+        "hang up",
+        "fold and put away"
+    ],
+    "wash": [
+        "wash",
+        "washing",
+        "run washer"
+    ],
+    "dry": [
+        "dry",
+        "run dryer"
+    ],
+    "fold": [
+        "fold",
+        "fold clothes"
+    ]
+}
+
 # VERB + CONTEXT DETECTION
 
 def detect_verb(task_text: str) -> str:
@@ -115,6 +137,16 @@ def detect_verb(task_text: str) -> str:
                 return intent
 
     return "generic"
+
+def detect_action(task_text: str) -> str | None:
+    text = task_text.lower()
+
+    for action, phrases in ACTION_REGISTRY.items():
+        for phrase in phrases:
+            if phrase in text:
+                return action
+
+    return None
 
 def detect_context(task_text: str) -> str:
     text = task_text.lower()
@@ -142,6 +174,14 @@ def suggest_time_for_verb(verb: str) -> int:
 def generate_raw_subtasks(task_text: str) -> list[str]:
     verb = detect_verb(task_text)
     context = detect_context(task_text)
+    action = detect_action(task_text)
+
+    if verb == "clean" and action == "put_away":
+        return [
+            "Fold clean clothes",
+            "Hang clothes in closet",
+            "Put away remaining items"
+        ]
 
     if verb in QUEST_CATEGORIES:
         ctx_map = QUEST_CATEGORIES[verb]
@@ -182,7 +222,6 @@ def adjust_for_motivation(base_min, base_max, motivation: str):
 
     return base_min, base_max
 
-
 def min_steps_for_difficulty(difficulty: str, motivation: str = "normal") -> int:
     if difficulty == "easy":
         base = 1
@@ -195,7 +234,6 @@ def min_steps_for_difficulty(difficulty: str, motivation: str = "normal") -> int
 
     adjusted_min, _ = adjust_for_motivation(base, base, motivation)
     return adjusted_min
-
 
 def max_steps_for_difficulty(difficulty: str, motivation: str = "normal") -> int:
     if difficulty == "easy":
@@ -252,7 +290,6 @@ def build_initial_quest_plan(task_text: str):
         "suggested_time": suggested_time,
         "base_xp": base_xp
     }
-
 
 def finalize_quest_plan(
     selected_subtasks: list[str],

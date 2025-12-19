@@ -1,5 +1,6 @@
-# SUBTASK SUGGESTION CATEGORIES
+from .intent_registry import detect_intent, detect_action
 
+# SUBTASK SUGGESTION CATEGORIES
 QUEST_CATEGORIES = {
     "clean": {
         "kitchen": [
@@ -66,87 +67,7 @@ DIFFICULTY_VALUES = {
     "hard": 4
 }
 
-# INTENT REGISTRY
-
-INTENT_REGISTRY = {
-    "clean": [
-        "clean",
-        "laundry",
-        "do laundry",
-        "wash clothes",
-        "wash laundry",
-        "clothes",
-        "dirty clothes",
-        "tidy",
-        "pick up"
-    ],
-    "organize": [
-        "organize",
-        "sort",
-        "put away",
-        "declutter",
-        "arrange"
-    ],
-    "study": [
-        "study",
-        "review",
-        "exam",
-        "test"
-    ],
-    "write": [
-        "write",
-        "essay",
-        "paper",
-        "draft"
-    ],
-    "research": [
-        "research"
-    ]
-}
-
-ACTION_REGISTRY = {
-    "put_away": [
-        "put away",
-        "store",
-        "hang up",
-        "fold and put away"
-    ],
-    "wash": [
-        "wash",
-        "washing",
-        "run washer"
-    ],
-    "dry": [
-        "dry",
-        "run dryer"
-    ],
-    "fold": [
-        "fold",
-        "fold clothes"
-    ]
-}
-
 # VERB + CONTEXT DETECTION
-
-def detect_verb(task_text: str) -> str:
-    text = task_text.lower()
-
-    for intent, phrases in INTENT_REGISTRY.items():
-        for phrase in phrases:
-            if phrase in text:
-                return intent
-
-    return "generic"
-
-def detect_action(task_text: str) -> str | None:
-    text = task_text.lower()
-
-    for action, phrases in ACTION_REGISTRY.items():
-        for phrase in phrases:
-            if phrase in text:
-                return action
-
-    return None
 
 def detect_context(task_text: str) -> str:
     text = task_text.lower()
@@ -168,23 +89,23 @@ def detect_context(task_text: str) -> str:
 
 # RAW SUBTASK GENERATION
 
-def suggest_time_for_verb(verb: str) -> int:
-    return DEFAULT_VERB_TIMES.get(verb, 20)
+def suggest_time_for_verb(intent) -> int:
+    return DEFAULT_VERB_TIMES.get(intent, 20)
 
 def generate_raw_subtasks(task_text: str) -> list[str]:
-    verb = detect_verb(task_text)
+    intent = detect_intent(task_text)
     context = detect_context(task_text)
     action = detect_action(task_text)
 
-    if verb == "clean" and action == "put_away":
+    if intent == "clean" and action == "put_away":
         return [
             "Fold clean clothes",
             "Hang clothes in closet",
             "Put away remaining items"
         ]
 
-    if verb in QUEST_CATEGORIES:
-        ctx_map = QUEST_CATEGORIES[verb]
+    if intent in QUEST_CATEGORIES:
+        ctx_map = QUEST_CATEGORIES[intent]
         if context in ctx_map:
             return ctx_map[context]
 
@@ -275,15 +196,16 @@ def calculate_bonus_xp(base_xp: int, elapsed_minutes: float, bonus_window: int) 
 # INITIAL + FINAL QUEST PLAN
 
 def build_initial_quest_plan(task_text: str):
-    verb = detect_verb(task_text)
+    intent = detect_intent(task_text)
     subtasks = generate_raw_subtasks(task_text)
     step_count = len(subtasks)
-    suggested_difficulty = suggest_difficulty_from_steps(verb, step_count)
-    suggested_time = snap_to_five(suggest_time_for_verb(verb))
+
+    suggested_difficulty = suggest_difficulty_from_steps(intent, step_count)
+    suggested_time = snap_to_five(suggest_time_for_verb(intent))
     base_xp = calculate_base_xp(suggested_difficulty, step_count)
 
     return {
-        "verb": verb,
+        "intent": intent,
         "subtasks": subtasks,
         "step_count": step_count,
         "suggested_difficulty": suggested_difficulty,

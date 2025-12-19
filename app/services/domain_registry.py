@@ -99,3 +99,13 @@ DOMAIN_REGISTRY = {
         "default_intent": "write"
     }
 }
+
+def detect_domain(task_text: str) -> str | None:
+    text = task_text.lower()
+
+    for domain, config in DOMAIN_REGISTRY.items():
+        for keyword in config["keywords"]:
+            if keyword in text:
+                return domain
+
+    return None

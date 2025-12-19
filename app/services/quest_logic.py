@@ -1,4 +1,5 @@
 from .intent_registry import detect_intent, detect_action
+from .domain_registry import detect_domain, infer_intent_from_domain
 
 # SUBTASK SUGGESTION CATEGORIES
 QUEST_CATEGORIES = {
@@ -197,6 +198,11 @@ def calculate_bonus_xp(base_xp: int, elapsed_minutes: float, bonus_window: int) 
 
 def build_initial_quest_plan(task_text: str):
     intent = detect_intent(task_text)
+    domain = detect_domain(task_text)
+
+    if not intent:
+        intent = infer_intent_from_domain(domain)
+
     subtasks = generate_raw_subtasks(task_text)
     step_count = len(subtasks)
 
@@ -206,6 +212,7 @@ def build_initial_quest_plan(task_text: str):
 
     return {
         "intent": intent,
+        "domain": domain,
         "subtasks": subtasks,
         "step_count": step_count,
         "suggested_difficulty": suggested_difficulty,

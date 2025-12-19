@@ -1,4 +1,21 @@
 from .intent_registry import detect_intent, detect_action
+from .domain_registry import detect_domain
+from .domain_templates import DOMAIN_TEMPLATE_MAP
+
+# INTENT → DOMAIN FALLBACK
+INTENT_TO_DOMAIN = {
+    "clean": "cleaning",
+    "organize": "organizing",
+    "study": "study",
+    "write": "writing",
+    "fitness": "fitness",
+    "code": "coding",
+}
+
+def infer_domain_from_intent(intent: str | None) -> str | None:
+    if not intent:
+        return None
+    return INTENT_TO_DOMAIN.get(intent)
 
 # SUBTASK SUGGESTION CATEGORIES
 QUEST_CATEGORIES = {
@@ -53,7 +70,7 @@ QUEST_CATEGORIES = {
     }
 }
 
-DEFAULT_VERB_TIMES = {
+DEFAULT_INTENT_TIMES = {
     "clean": 20,
     "organize": 25,
     "write": 30,
@@ -89,26 +106,38 @@ def detect_context(task_text: str) -> str:
 
 # RAW SUBTASK GENERATION
 
-def suggest_time_for_verb(intent) -> int:
-    return DEFAULT_VERB_TIMES.get(intent, 20)
+def suggest_time_for_intent(intent: str | None) -> int:
+    return DEFAULT_INTENT_TIMES.get(intent, 20)
 
 def generate_raw_subtasks(task_text: str) -> list[str]:
+    domain = detect_domain(task_text)
     intent = detect_intent(task_text)
-    context = detect_context(task_text)
     action = detect_action(task_text)
+    context = detect_context(task_text)
 
-    if intent == "clean" and action == "put_away":
-        return [
-            "Fold clean clothes",
-            "Hang clothes in closet",
-            "Put away remaining items"
-        ]
+    # Fallback: infer domain from intent if domain not detected
+    if not domain:
+        inferred_domain = infer_domain_from_intent(intent)
+        if inferred_domain:
+            domain = inferred_domain
 
+    # Domain + action (most specific)
+    if domain in DOMAIN_TEMPLATE_MAP:
+        template = DOMAIN_TEMPLATE_MAP[domain]
+
+        if action and action in template:
+            return template[action]
+
+        if "full" in template:
+            return template["full"]
+
+    # Intent + context fallback
     if intent in QUEST_CATEGORIES:
         ctx_map = QUEST_CATEGORIES[intent]
         if context in ctx_map:
             return ctx_map[context]
 
+    # Absolute fallback
     return [
         f"Break '{task_text}' into smaller pieces",
         f"Do the simplest first step of '{task_text}'",
@@ -117,10 +146,10 @@ def generate_raw_subtasks(task_text: str) -> list[str]:
 
 # DIFFICULTY SUGGESTION
 
-def suggest_difficulty_from_steps(verb: str, step_count: int) -> str:
-    if verb in ("write", "study", "research"):
+def suggest_difficulty_from_steps(intent: str, step_count: int) -> str:
+    if intent in ("write", "study", "research"):
         base = "medium"
-    elif verb in ("clean", "organize"):
+    elif intent in ("clean", "organize"):
         base = "easy"
     else:
         base = "medium"
@@ -175,14 +204,11 @@ def calculate_base_xp(difficulty: str, step_count: int) -> int:
     multiplier = DIFFICULTY_VALUES.get(difficulty, 1)
     return step_count * multiplier * 10
 
-
 def snap_to_five(minutes: int) -> int:
     return max(5, min(120, int(5 * round(minutes / 5))))
 
-
 def calculate_bonus_window(estimated_time: int) -> int:
     return int(estimated_time * 0.8)
-
 
 def calculate_bonus_xp(base_xp: int, elapsed_minutes: float, bonus_window: int) -> int:
     if elapsed_minutes > bonus_window:
@@ -197,15 +223,18 @@ def calculate_bonus_xp(base_xp: int, elapsed_minutes: float, bonus_window: int) 
 
 def build_initial_quest_plan(task_text: str):
     intent = detect_intent(task_text)
+    domain = detect_domain(task_text)
+
     subtasks = generate_raw_subtasks(task_text)
     step_count = len(subtasks)
 
     suggested_difficulty = suggest_difficulty_from_steps(intent, step_count)
-    suggested_time = snap_to_five(suggest_time_for_verb(intent))
+    suggested_time = snap_to_five(suggest_time_for_intent(intent))
     base_xp = calculate_base_xp(suggested_difficulty, step_count)
 
     return {
         "intent": intent,
+        "domain": domain,
         "subtasks": subtasks,
         "step_count": step_count,
         "suggested_difficulty": suggested_difficulty,

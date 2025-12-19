@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
+from flask_login import login_required, current_user
 from ..extensions import db
-from ..models.models import Task, User, Quest
+from ..models.models import Task, Quest
 from ..services.quest_logic import (
     build_initial_quest_plan,
     finalize_quest_plan
@@ -8,19 +9,14 @@ from ..services.quest_logic import (
 
 quests_bp = Blueprint("quests", __name__)
 
-def get_or_create_default_user():
-    user = User.query.filter_by(username="default").first()
-    if not user:
-        user = User(username="default", motivation="normal")
-        db.session.add(user)
-        db.session.commit()
-    return user
-
 @quests_bp.route("/tasks/<int:task_id>/preview-quests", methods=["POST"])
+@login_required
 def preview_quests(task_id):
-    user = get_or_create_default_user()
+    task = Task.query.filter_by(
+        id=task_id,
+        user_id=current_user.id
+    ).first()
 
-    task = Task.query.filter_by(id=task_id, user_id=user.id).first()
     if not task:
         return jsonify({"error": "task not found"}), 404
 
@@ -35,10 +31,13 @@ def preview_quests(task_id):
     ]), 200
 
 @quests_bp.route("/tasks/<int:task_id>/finalize-quests", methods=["POST"])
+@login_required
 def finalize_quests(task_id):
-    user = get_or_create_default_user()
+    task = Task.query.filter_by(
+        id=task_id,
+        user_id=current_user.id
+    ).first()
 
-    task = Task.query.filter_by(id=task_id, user_id=user.id).first()
     if not task:
         return jsonify({"error": "task not found"}), 404
 
@@ -64,7 +63,7 @@ def finalize_quests(task_id):
         selected_subtasks=selected_subtasks,
         chosen_difficulty=difficulty,
         chosen_minutes=estimated_time,
-        motivation=user.motivation
+        motivation=current_user.motivation
     )
 
     created_quests = []
@@ -101,10 +100,13 @@ def finalize_quests(task_id):
     }), 201
 
 @quests_bp.route("/tasks/<int:task_id>/quests", methods=["GET"])
+@login_required
 def get_task_quests(task_id):
-    user = get_or_create_default_user()
+    task = Task.query.filter_by(
+        id=task_id,
+        user_id=current_user.id
+    ).first()
 
-    task = Task.query.filter_by(id=task_id, user_id=user.id).first()
     if not task:
         return jsonify({"error": "task not found"}), 404
 

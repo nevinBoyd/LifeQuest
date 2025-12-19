@@ -1,13 +1,18 @@
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 from ..extensions import db
 
 # USER MODEL
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, nullable=False, unique=True)
+
+    # Password hash for auth
+    password_hash = db.Column(db.String, nullable=False)
 
     # Motivation: low / normal / high
     motivation = db.Column(db.String, default="normal")  
@@ -16,6 +21,13 @@ class User(db.Model):
     total_xp = db.Column(db.Integer, default=0)
     
     tasks = db.relationship("Task", back_populates="user")
+
+    # Password helpers
+    def set_password(self, password: str) -> None:
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password: str) -> bool:
+        return check_password_hash(self.password_hash, password)
 
 
 # MAIN TASK (BIG GOAL)

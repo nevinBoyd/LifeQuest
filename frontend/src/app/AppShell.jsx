@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect,useState } from "react";
+import { apiFetch } from "../api";
+import AuthForm from "../AuthForm";
 import TaskInput from "./TaskInput";
 import QuestPlanner from "./QuestPlanner";
 import ActiveQuest from "./ActiveQuest";
@@ -10,11 +12,26 @@ const APP_STATES = {
 };
 
 function AppShell() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [appState, setAppState] = useState(APP_STATES.EMPTY);
 
   const [task, setTask] = useState(null);
   const [quests, setQuests] = useState([]);
   const [activeQuestIndex, setActiveQuestIndex] = useState(0);
+
+  useEffect(() => {
+    async function checkSession() {
+      const res = await apiFetch("/me");
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data);
+      }
+      setLoading(false);
+    }
+
+    checkSession();
+  }, []);
 
   function handleTaskCreated(createdTask) {
     setTask(createdTask);
@@ -36,6 +53,14 @@ function AppShell() {
       console.warn("All quests completed");
     }
   }
+
+    if (loading) {
+      return <div>Loading...</div>;
+    }
+
+    if (!user) {
+      return <AuthForm onAuth={setUser} />;
+    }
 
   function renderCurrentState() {
     switch (appState) {

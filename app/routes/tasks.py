@@ -1,21 +1,12 @@
 from flask import Blueprint, request, jsonify
 from ..extensions import db
-from ..models.models import User, Task
+from ..models.models import Task
+from flask_login import login_required, current_user
 
 tasks_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
 
-
-def get_or_create_default_user():
-    # Default stub user until auth exists
-    user = User.query.filter_by(username="default").first()
-    if not user:
-        user = User(username="default", motivation="normal")
-        db.session.add(user)
-        db.session.commit()
-    return user
-
-
 @tasks_bp.route("", methods=["POST"])
+@login_required
 def create_task():
     data = request.get_json(silent=True) or {}
     title = (data.get("title") or "").strip()
@@ -23,9 +14,12 @@ def create_task():
     if not title:
         return jsonify({"error": "title is required"}), 400
 
-    user = get_or_create_default_user()
+    task = Task(
+        title=title,
+        user_id=current_user.id,
+        generated=False
+    )
 
-    task = Task(title=title, user_id=user.id, generated=False)
     db.session.add(task)
     db.session.commit()
 
@@ -42,10 +36,9 @@ def create_task():
     )
 
 @tasks_bp.route("", methods=["GET"])
+@login_required
 def get_tasks():
-    user = get_or_create_default_user()
-
-    tasks = Task.query.filter_by(user_id=user.id).all()
+    tasks = Task.query.filter_by(user_id=current_user.id).all()
 
     return (
         jsonify(
@@ -62,10 +55,12 @@ def get_tasks():
     )
 
 @tasks_bp.route("/<int:task_id>", methods=["GET"])
+@login_required
 def get_task(task_id):
-    user = get_or_create_default_user()
-
-    task = Task.query.filter_by(id=task_id, user_id=user.id).first()
+    task = Task.query.filter_by(
+        id=task_id,
+        user_id=current_user.id
+    ).first()
 
     if not task:
         return jsonify({"error": "task not found"}), 404

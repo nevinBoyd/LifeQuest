@@ -28,21 +28,74 @@ DOMAIN_REGISTRY = {
             "bedroom"
         ],
         "default_intent": "clean"
+    },
+
+    "cleaning": {
+        "keywords": [
+            "clean",
+            "cleanup",
+            "cleaning",
+            "tidy",
+            "tidying"
+        ],
+        "default_intent": "clean"
+    },
+
+    "organizing": {
+        "keywords": [
+            "organize",
+            "organizing",
+            "declutter",
+            "sort"
+        ],
+        "default_intent": "organize"
+    },
+
+    "fitness": {
+        "keywords": [
+            "exercise",
+            "workout",
+            "gym",
+            "run",
+            "running",
+            "yoga",
+            "fitness",
+            "calisthenics"
+        ],
+        "default_intent": "fitness"
+    },
+
+    "coding": {
+        "keywords": [
+            "code",
+            "coding",
+            "program",
+            "bug",
+            "debug",
+            "feature",
+            "github"
+        ],
+        "default_intent": "code"
+    },
+
+    "study": {
+        "keywords": [
+            "study",
+            "exam",
+            "test",
+            "homework"
+        ],
+        "default_intent": "study"
+    },
+
+    "writing": {
+        "keywords": [
+            "write",
+            "writing",
+            "essay",
+            "paper",
+            "draft"
+        ],
+        "default_intent": "write"
     }
 }
-
-def detect_domain(task_text: str) -> str | None:
-    text = task_text.lower()
-
-    for domain, config in DOMAIN_REGISTRY.items():
-        for keyword in config["keywords"]:
-            if keyword in text:
-                return domain
-
-    return None
-
-def infer_intent_from_domain(domain: str | None) -> str | None:
-    if not domain:
-        return None
-
-    return DOMAIN_REGISTRY.get(domain, {}).get("default_intent")

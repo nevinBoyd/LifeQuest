@@ -1,5 +1,6 @@
-# SUBTASK SUGGESTION CATEGORIES
+from .intent_registry import detect_intent, detect_action
 
+# SUBTASK SUGGESTION CATEGORIES
 QUEST_CATEGORIES = {
     "clean": {
         "kitchen": [
@@ -68,21 +69,6 @@ DIFFICULTY_VALUES = {
 
 # VERB + CONTEXT DETECTION
 
-def detect_verb(task_text: str) -> str:
-    text = task_text.lower()
-    if "clean" in text:
-        return "clean"
-    if "organize" in text:
-        return "organize"
-    if "study" in text:
-        return "study"
-    if "essay" in text or "write" in text:
-        return "write"
-    if "research" in text:
-        return "research"
-    return "generic"
-
-
 def detect_context(task_text: str) -> str:
     text = task_text.lower()
     if "kitchen" in text:
@@ -103,20 +89,26 @@ def detect_context(task_text: str) -> str:
 
 # RAW SUBTASK GENERATION
 
-def suggest_time_for_verb(verb: str) -> int:
-    return DEFAULT_VERB_TIMES.get(verb, 20)
-
+def suggest_time_for_verb(intent) -> int:
+    return DEFAULT_VERB_TIMES.get(intent, 20)
 
 def generate_raw_subtasks(task_text: str) -> list[str]:
-    verb = detect_verb(task_text)
+    intent = detect_intent(task_text)
     context = detect_context(task_text)
+    action = detect_action(task_text)
 
-    if verb in QUEST_CATEGORIES:
-        ctx_map = QUEST_CATEGORIES[verb]
+    if intent == "clean" and action == "put_away":
+        return [
+            "Fold clean clothes",
+            "Hang clothes in closet",
+            "Put away remaining items"
+        ]
+
+    if intent in QUEST_CATEGORIES:
+        ctx_map = QUEST_CATEGORIES[intent]
         if context in ctx_map:
             return ctx_map[context]
 
-    # Fallback
     return [
         f"Break '{task_text}' into smaller pieces",
         f"Do the simplest first step of '{task_text}'",
@@ -143,20 +135,13 @@ def suggest_difficulty_from_steps(verb: str, step_count: int) -> str:
 # MOTIVATION SCALING
 
 def adjust_for_motivation(base_min, base_max, motivation: str):
-    """
-    Motivation modifies step thresholds:
-    - low: user struggles → 25% fewer steps allowed
-    - high: user energized → 25% more steps allowed
-    """
-
     if motivation == "low":
         return max(1, int(base_min * 0.75)), max(1, int(base_max * 0.75))
 
     if motivation == "high":
         return int(base_min * 1.25), int(base_max * 1.25)
 
-    return base_min, base_max  # normal
-
+    return base_min, base_max
 
 def min_steps_for_difficulty(difficulty: str, motivation: str = "normal") -> int:
     if difficulty == "easy":
@@ -170,7 +155,6 @@ def min_steps_for_difficulty(difficulty: str, motivation: str = "normal") -> int
 
     adjusted_min, _ = adjust_for_motivation(base, base, motivation)
     return adjusted_min
-
 
 def max_steps_for_difficulty(difficulty: str, motivation: str = "normal") -> int:
     if difficulty == "easy":
@@ -212,15 +196,16 @@ def calculate_bonus_xp(base_xp: int, elapsed_minutes: float, bonus_window: int) 
 # INITIAL + FINAL QUEST PLAN
 
 def build_initial_quest_plan(task_text: str):
-    verb = detect_verb(task_text)
+    intent = detect_intent(task_text)
     subtasks = generate_raw_subtasks(task_text)
     step_count = len(subtasks)
-    suggested_difficulty = suggest_difficulty_from_steps(verb, step_count)
-    suggested_time = snap_to_five(suggest_time_for_verb(verb))
+
+    suggested_difficulty = suggest_difficulty_from_steps(intent, step_count)
+    suggested_time = snap_to_five(suggest_time_for_verb(intent))
     base_xp = calculate_base_xp(suggested_difficulty, step_count)
 
     return {
-        "verb": verb,
+        "intent": intent,
         "subtasks": subtasks,
         "step_count": step_count,
         "suggested_difficulty": suggested_difficulty,
@@ -232,12 +217,11 @@ def finalize_quest_plan(
     selected_subtasks: list[str],
     chosen_difficulty: str,
     chosen_minutes: int,
-    motivation: str = "normal"   # NEW PARAMETER
+    motivation: str = "normal"
 ):
     step_count = len(selected_subtasks)
     minutes = snap_to_five(chosen_minutes)
 
-    # Motivation-aware thresholds
     min_steps = min_steps_for_difficulty(chosen_difficulty, motivation)
     max_steps = max_steps_for_difficulty(chosen_difficulty, motivation)
 

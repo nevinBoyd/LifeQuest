@@ -7,15 +7,23 @@ def create_app():
     app = Flask(__name__)
 
     # Basic configuration
+    app.config["SECRET_KEY"] = "dev-secret-key"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///lifequest.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     # Enable CORS for frontend dev
     CORS(
-    app,
-    resources={r"/*": {"origins": "http://localhost:5173"}},
-    supports_credentials=False,
-)
+        app,
+        resources={
+            r"/*": {
+                "origins": [
+                    "http://localhost:5173", 
+                    "http://127.0.0.1:5173",
+                 ]
+            }
+        },
+        supports_credentials=True,
+    )
 
     # Initialize extensions
     db.init_app(app)

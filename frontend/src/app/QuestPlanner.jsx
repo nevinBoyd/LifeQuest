@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "../api";
 
 function QuestPlanner({ task, onQuestsFinalized }) {
   const [previewQuests, setPreviewQuests] = useState([]);
@@ -6,13 +7,10 @@ function QuestPlanner({ task, onQuestsFinalized }) {
 
   useEffect(() => {
     async function fetchPreviewQuests() {
-      const res = await fetch(
-        `http://127.0.0.1:5000/tasks/${task.id}/preview-quests`,
+      const res = await apiFetch(
+        `/tasks/${task.id}/preview-quests`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
         }
       );
 

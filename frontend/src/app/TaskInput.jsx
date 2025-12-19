@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiFetch } from "../api";
 
 function TaskInput({ onTaskCreated }) {
   const [title, setTitle] = useState("");
@@ -9,11 +10,8 @@ function TaskInput({ onTaskCreated }) {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) return;
 
-    const res = await fetch("http://localhost:5000/tasks", {
+    const res = await apiFetch("/tasks", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({ title: trimmedTitle }),
     });
 

@@ -32,17 +32,21 @@ function QuestPlanner({ task, onQuestsFinalized }) {
   }
 
   async function handleFinalize() {
-  const selectedQuests = previewQuests.filter((q) =>
-    selectedQuestIds.includes(q.id)
-  );
+  const selectedSubtasks = previewQuests
+    .filter((q) => selectedQuestIds.includes(q.id))
+    .map((q) => q.title);
 
-  if (selectedQuests.length === 0) return;
+  if (selectedSubtasks.length === 0) return;
 
   const res = await apiFetch(
     `/tasks/${task.id}/finalize-quests`,
     {
       method: "POST",
-      body: JSON.stringify({ quests: selectedQuests }),
+      body: JSON.stringify({
+        subtasks: selectedSubtasks,
+        difficulty: "medium",
+        estimated_time: 30
+      }),
     }
   );
 
@@ -51,8 +55,8 @@ function QuestPlanner({ task, onQuestsFinalized }) {
     return;
   }
 
-  const persistedQuests = await res.json();
-  onQuestsFinalized(persistedQuests);
+  const data = await res.json();
+  onQuestsFinalized(data.quests);
 }
 
   return (

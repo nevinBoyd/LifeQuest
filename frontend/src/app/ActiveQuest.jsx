@@ -1,22 +1,46 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../api";
 
+const SUBQUEST_LINES = [
+  "This quest is resolved. Stay the course — the next task will guide you.",
+  "The work is complete. Remain steady on the path.",
+  "This stage is finished. What comes next will show itself.",
+  "Resolved. Continue.",
+];
+
+const MAINQUEST_LINES = [
+  "The seal is closed. The work stands.",
+  "This path is complete. What was undertaken has been carried through.",
+  "The circuit is finished. You may begin again when ready.",
+  "The work has returned to stillness.",
+];
+
 function ActiveQuest({
   quest,
   questIndex,
   totalQuests,
   onQuestCompleted,
+  onXpEarned,
+  onCompletionPhrase,
 }) {
   const [isCompleting, setIsCompleting] = useState(false);
+  const [lastLineIndex, setLastLineIndex] = useState(null);
+
+  // Pick a completion phrase without repeating the last one
+  function pickCompletionLine(lines) {
+    let index;
+    do {
+      index = Math.floor(Math.random() * lines.length);
+    } while (index === lastLineIndex && lines.length > 1);
+
+    setLastLineIndex(index);
+    return lines[index];
+  }
 
   // Reset button state when quest changes
   useEffect(() => {
     setIsCompleting(false);
   }, [quest?.id]);
-
-  if (!quest) {
-    return <div>No active quest</div>;
-  }
 
   async function handleComplete() {
     if (isCompleting) return;
@@ -34,23 +58,48 @@ function ActiveQuest({
       return;
     }
 
+    const isFinalQuest = questIndex === totalQuests - 1;
+    const lines = isFinalQuest ? MAINQUEST_LINES : SUBQUEST_LINES;
+
+    const phrase = pickCompletionLine(lines);
+    onCompletionPhrase(phrase);
+    onXpEarned(quest.base_xp);
     onQuestCompleted();
+
+    setIsCompleting(false);
+  }
+
+  if (!quest) {
+    return <div>No active quest</div>;
   }
 
   return (
-    <div>
-      <div>
-        Quest {questIndex + 1} of {totalQuests}
+    <div className="planner-stage">
+      <div className="planner-card">
+        <div className="card card-selected">
+          {/* Header */}
+          <h3>
+            Quest {questIndex + 1} of {totalQuests}
+          </h3>
+
+          {/* Quest text */}
+          <div
+            style={{
+              minHeight: "120px",
+              maxHeight: "120px",
+              overflowY: "auto",
+              marginBottom: "1rem",
+            }}
+          >
+            {quest.text}
+          </div>
+
+          {/* Action */}
+          <button onClick={handleComplete} disabled={isCompleting}>
+            {isCompleting ? "COMPLETING..." : "COMPLETE"}
+          </button>
+        </div>
       </div>
-
-      <h3>{quest.text}</h3>
-
-      <button
-        onClick={handleComplete}
-        disabled={isCompleting}
-      >
-        {isCompleting ? "COMPLETING..." : "COMPLETE"}
-      </button>
     </div>
   );
 }

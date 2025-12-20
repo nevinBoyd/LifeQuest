@@ -50,7 +50,11 @@ function AppShell() {
     if (nextIndex < quests.length) {
       setActiveQuestIndex(nextIndex);
     } else {
-      console.warn("All quests completed");
+      // All quests completed → reset flow
+      setTask(null);
+      setQuests([]);
+      setActiveQuestIndex(0);
+      setAppState(APP_STATES.EMPTY);
     }
   }
   

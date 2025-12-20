@@ -1,4 +1,4 @@
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "../api";
 import AuthForm from "../AuthForm";
 import TaskInput from "./TaskInput";
@@ -50,9 +50,28 @@ function AppShell() {
     if (nextIndex < quests.length) {
       setActiveQuestIndex(nextIndex);
     } else {
-      console.warn("All quests completed");
+      // All quests completed → reset flow
+      setTask(null);
+      setQuests([]);
+      setActiveQuestIndex(0);
+      setAppState(APP_STATES.EMPTY);
     }
   }
+  
+  async function handleLogout() {
+    const res = await apiFetch("/logout", { method: "POST" });
+
+    if (!res.ok) {
+      console.error("Logout failed");
+      return;
+  }
+
+  setUser(null);
+  setTask(null);
+  setQuests([]);
+  setActiveQuestIndex(0);
+  setAppState(APP_STATES.EMPTY);
+}
 
     if (loading) {
       return <div>Loading...</div>;
@@ -90,7 +109,12 @@ function AppShell() {
     }
   }
 
-  return <div>{renderCurrentState()}</div>;
+  return (
+  <div>
+    <button onClick={handleLogout}>LOGOUT</button>
+    {renderCurrentState()}
+  </div>
+);
 }
 
 export default AppShell;

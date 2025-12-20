@@ -31,15 +31,33 @@ function QuestPlanner({ task, onQuestsFinalized }) {
     );
   }
 
-  function handleFinalize() {
-    const finalizedQuests = previewQuests.filter((q) =>
-      selectedQuestIds.includes(q.id)
-    );
+  async function handleFinalize() {
+  const selectedSubtasks = previewQuests
+    .filter((q) => selectedQuestIds.includes(q.id))
+    .map((q) => q.title);
 
-    if (finalizedQuests.length === 0) return;
+  if (selectedSubtasks.length === 0) return;
 
-    onQuestsFinalized(finalizedQuests);
+  const res = await apiFetch(
+    `/tasks/${task.id}/finalize-quests`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        subtasks: selectedSubtasks,
+        difficulty: "medium",
+        estimated_time: 30
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    console.error("Failed to finalize quests");
+    return;
   }
+
+  const data = await res.json();
+  onQuestsFinalized(data.quests);
+}
 
   return (
     <div>

@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from ..extensions import db
@@ -131,3 +132,36 @@ def get_task_quests(task_id):
         }
         for q in quests
     ]), 200
+
+@quests_bp.route("/quests/<int:quest_id>/complete", methods=["POST"])
+@login_required
+def complete_quest(quest_id):
+    quest = (
+        Quest.query
+        .join(Task)
+        .filter(
+            Quest.id == quest_id,
+            Task.user_id == current_user.id
+        )
+        .first()
+    )
+
+    if not quest:
+        return jsonify({"error": "quest not found"}), 404
+
+    if quest.completed:
+        return jsonify({"error": "quest already completed"}), 400
+
+    quest.completed = True
+    quest.completed_at = datetime.utcnow()
+
+    current_user.total_xp += quest.base_xp
+
+    db.session.commit()
+
+    return jsonify({
+        "quest_id": quest.id,
+        "completed": True,
+        "completed_at": quest.completed_at,
+        "total_xp": current_user.total_xp
+    }), 200

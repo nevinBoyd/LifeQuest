@@ -111,7 +111,11 @@ function AppShell() {
 
   return (
   <div>
-    <button onClick={handleLogout}>LOGOUT</button>
+    <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+      <button onClick={handleLogout}>LOGOUT</button>
+      <div>XP: {user.total_xp}</div>
+    </div>
+
     {renderCurrentState()}
   </div>
 );

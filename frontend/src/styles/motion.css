@@ -1,0 +1,150 @@
+/* Logout button — fixed top left */
+.logout-button {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+}
+
+/* XP total — fixed bottom right */
+.xp-ledger {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 10;
+  font-weight: 600;
+  font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+}
+
+/* XP float — rises from XP ledger */
+.xp-float {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  pointer-events: none;
+  animation: xp-rise 1.1s ease-out forwards;
+  font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+}
+
+@keyframes xp-rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+}
+
+/* Completion feed — MMO-style message stack */
+.completion-feed {
+  position: fixed;
+  left: 1.5rem;
+  bottom: 6rem;
+  width: min(90vw, 420px);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.completion-line {
+  margin-bottom: 0.75rem;
+  opacity: 0;
+  animation: phrase-fade 30s linear forwards;
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
+  line-height: 1.4;
+}
+
+@keyframes phrase-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  5% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Core stage container — true viewport owner */
+.stage {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Quest planner stage */
+.planner-stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  min-height: 420px;
+  overflow: visible;
+  margin-top: 2rem;
+}
+
+/* Card base */
+.card {
+  width: clamp(300px, 40vw, 420px);
+  height: clamp(360px, 50vh, 460px);
+  border-radius: 10px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+/* Task input action zone */
+.task-input-zone {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(12rem, 22vh, 18rem);
+  transform: translateX(-50%);
+  width: min(90vw, 420px);
+  z-index: 6;
+}
+
+/* Task input form — unified control */
+.task-input-zone form {
+  display: flex;
+  align-items: stretch;
+}
+
+/* Shared sizing */
+.task-input-zone input,
+.task-input-zone button {
+  font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+  height: 2.75rem;
+}
+
+/* Input — left side */
+.task-input-zone input {
+  flex: 1;
+  padding: 0 1rem;
+  border-radius: 8px 0 0 8px;
+}
+
+/* Button — right side */
+.task-input-zone button {
+  padding: 0 1.2rem;
+  white-space: nowrap;
+  border-radius: 0 8px 8px 0;
+}

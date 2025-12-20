@@ -21,7 +21,7 @@ function TaskInput({ onTaskCreated }) {
     onTaskCreated(task);
     setTitle("");
   }
-  
+
   return (
     <form onSubmit={handleSubmit}>
       <input
@@ -30,7 +30,7 @@ function TaskInput({ onTaskCreated }) {
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Enter a task"
       />
-      <button type="submit">Start</button>
+      <button type="submit">READY UP</button>
     </form>
   );
 }

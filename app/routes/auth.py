@@ -56,4 +56,5 @@ def me():
     return jsonify({
         "id": current_user.id,
         "username": current_user.username,
+        "total_xp": current_user.total_xp,
     }), 200

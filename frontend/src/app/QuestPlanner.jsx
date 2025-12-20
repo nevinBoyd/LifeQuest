@@ -31,15 +31,29 @@ function QuestPlanner({ task, onQuestsFinalized }) {
     );
   }
 
-  function handleFinalize() {
-    const finalizedQuests = previewQuests.filter((q) =>
-      selectedQuestIds.includes(q.id)
-    );
+  async function handleFinalize() {
+  const selectedQuests = previewQuests.filter((q) =>
+    selectedQuestIds.includes(q.id)
+  );
 
-    if (finalizedQuests.length === 0) return;
+  if (selectedQuests.length === 0) return;
 
-    onQuestsFinalized(finalizedQuests);
+  const res = await apiFetch(
+    `/tasks/${task.id}/finalize-quests`,
+    {
+      method: "POST",
+      body: JSON.stringify({ quests: selectedQuests }),
+    }
+  );
+
+  if (!res.ok) {
+    console.error("Failed to finalize quests");
+    return;
   }
+
+  const persistedQuests = await res.json();
+  onQuestsFinalized(persistedQuests);
+}
 
   return (
     <div>

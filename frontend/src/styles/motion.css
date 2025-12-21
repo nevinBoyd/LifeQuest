@@ -101,7 +101,7 @@
   margin-top: 2rem;
 }
 
-/* Card base */
+/* Card base — navy theme */
 .card {
   width: clamp(300px, 40vw, 420px);
   height: clamp(360px, 50vh, 460px);
@@ -109,8 +109,15 @@
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+
+  background-color: #09111ee6;
+  color: #e6e9ef;
+
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
+
 
 /* Task input action zone */
 .task-input-zone {
@@ -147,4 +154,38 @@
   padding: 0 1.2rem;
   white-space: nowrap;
   border-radius: 0 8px 8px 0;
+}
+
+/* Core stage container */
+.stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Rotated texture layer */
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  background-image: url("../assets/textures/stress.png");
+  background-size: cover;
+  background-position: center;
+  transform: rotate(90deg);
+  z-index: 0;
+}
+
+/* Color tint layer */
+.stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: rgba(146, 76, 5, 0.259); 
+  z-index: 1;
+}
+
+/* Everything inside stage sits above texture */
+.stage > * {
+  position: relative;
+  z-index: 2;
 }

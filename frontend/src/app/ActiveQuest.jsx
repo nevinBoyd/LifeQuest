@@ -22,6 +22,7 @@ function ActiveQuest({
   onQuestCompleted,
   onXpEarned,
   onCompletionPhrase,
+  onAbandonQuest,
 }) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [lastLineIndex, setLastLineIndex] = useState(null);
@@ -77,12 +78,10 @@ function ActiveQuest({
     <div className="planner-stage">
       <div className="planner-card">
         <div className="card card-selected">
-          {/* Header */}
           <h3>
             Quest {questIndex + 1} of {totalQuests}
           </h3>
 
-          {/* Quest text */}
           <div
             style={{
               minHeight: "120px",
@@ -94,9 +93,18 @@ function ActiveQuest({
             {quest.text}
           </div>
 
-          {/* Action */}
           <button onClick={handleComplete} disabled={isCompleting}>
             {isCompleting ? "COMPLETING..." : "COMPLETE"}
+          </button>
+
+          <button
+            onClick={onAbandonQuest}
+            style={{
+              marginTop: "0.75rem",
+              opacity: 0.7,
+            }}
+          >
+            ABANDON QUEST
           </button>
         </div>
       </div>

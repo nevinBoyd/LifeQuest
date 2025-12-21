@@ -1,0 +1,12 @@
+.landing-sigil {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.landing-sigil img {
+  width: 140px;      /* adjust size only */
+  opacity: 0.9;
+  user-select: none;
+  pointer-events: none;
+}

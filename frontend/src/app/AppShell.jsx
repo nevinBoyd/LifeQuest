@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../api";
-import AuthForm from "../AuthForm";
+
+import LandingGate from "./LandingGate";
 import TaskInput from "./TaskInput";
 import QuestPlanner from "./QuestPlanner";
 import ActiveQuest from "./ActiveQuest";
@@ -22,6 +23,7 @@ function AppShell() {
   const [quests, setQuests] = useState([]);
   const [activeQuestIndex, setActiveQuestIndex] = useState(0);
 
+  /* Session check */
   useEffect(() => {
     async function checkSession() {
       const res = await apiFetch("/me");
@@ -35,24 +37,27 @@ function AppShell() {
     checkSession();
   }, []);
 
+  /* Task created → planning */
   function handleTaskCreated(createdTask) {
     setTask(createdTask);
     setAppState(APP_STATES.PLANNING);
   }
 
+  /* Quests finalized → active */
   function handleQuestsFinalized(finalizedQuests) {
     setQuests(finalizedQuests);
     setActiveQuestIndex(0);
     setAppState(APP_STATES.ACTIVE);
   }
 
+  /* Quest completed */
   function handleQuestCompleted() {
     const nextIndex = activeQuestIndex + 1;
 
     if (nextIndex < quests.length) {
       setActiveQuestIndex(nextIndex);
     } else {
-      /* All quests completed reset flow */
+      /* All quests done → reset */
       setTask(null);
       setQuests([]);
       setActiveQuestIndex(0);
@@ -60,20 +65,28 @@ function AppShell() {
     }
   }
 
+  /* Abandon quest → back to task input */
+  function handleAbandonQuest() {
+    setTask(null);
+    setQuests([]);
+    setActiveQuestIndex(0);
+    setAppState(APP_STATES.EMPTY);
+  }
+
+  /* XP handling */
   function handleXpEarned(amount) {
     setUser((prevUser) => {
       if (!prevUser) return prevUser;
-
       return {
         ...prevUser,
         total_xp: prevUser.total_xp + amount,
       };
     });
 
-    /* Trigger XP float */
     setXpFloatAmount(amount);
   }
 
+  /* Completion phrases */
   function handleCompletionPhrase(text) {
     const entry = {
       id: crypto.randomUUID(),
@@ -87,7 +100,7 @@ function AppShell() {
     });
   }
 
-  /* Auto-expire completion phrases */
+  /* Auto-expire phrases */
   useEffect(() => {
     if (completionFeed.length === 0) return;
 
@@ -102,9 +115,9 @@ function AppShell() {
     return () => timers.forEach(clearTimeout);
   }, [completionFeed]);
 
+  /* Logout */
   async function handleLogout() {
     const res = await apiFetch("/logout", { method: "POST" });
-
     if (!res.ok) {
       console.error("Logout failed");
       return;
@@ -122,12 +135,12 @@ function AppShell() {
     return <div>Loading...</div>;
   }
 
-  /* Auth is conditionally rendered inside AppShell */
+  /* Unauthenticated */
   if (!user) {
-    return <AuthForm onAuth={setUser} />;
+    return <LandingGate onAuth={setUser} />;
   }
 
-  /* State-owned layout wrappers */
+  /* State-based layout */
   function renderStateLayout() {
     switch (appState) {
       case APP_STATES.EMPTY:
@@ -145,6 +158,7 @@ function AppShell() {
             <QuestPlanner
               task={task}
               onQuestsFinalized={handleQuestsFinalized}
+              onBack={handleAbandonQuest}
             />
           </div>
         );
@@ -157,6 +171,7 @@ function AppShell() {
               questIndex={activeQuestIndex}
               totalQuests={quests.length}
               onQuestCompleted={handleQuestCompleted}
+              onAbandonQuest={handleAbandonQuest}
               onXpEarned={handleXpEarned}
               onCompletionPhrase={handleCompletionPhrase}
             />
@@ -170,17 +185,14 @@ function AppShell() {
 
   return (
     <div>
-      {/* Logout — top left */}
       <button className="logout-button" onClick={handleLogout}>
         LOGOUT
       </button>
 
-      {/* XP total — bottom right */}
       <div className="xp-ledger">
         XP: {user.total_xp}
       </div>
 
-      {/* XP float */}
       {xpFloatAmount && (
         <div
           className="xp-float"
@@ -190,7 +202,6 @@ function AppShell() {
         </div>
       )}
 
-      {/* Completion feed */}
       <div className="completion-feed">
         {completionFeed.map((entry) => (
           <div key={entry.id} className="completion-line">
@@ -199,7 +210,6 @@ function AppShell() {
         ))}
       </div>
 
-      {/* Stage — sole viewport owner */}
       <div className="stage">
         {renderStateLayout()}
       </div>

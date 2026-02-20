@@ -52,7 +52,9 @@ function ActiveQuest({
       `/quests/${quest.id}/complete`,
       { method: "POST" }
     );
-
+    
+    onXpEarned(quest.base_xp, res.total_xp);
+    
     if (!res.ok) {
       console.error("Failed to complete quest");
       setIsCompleting(false);

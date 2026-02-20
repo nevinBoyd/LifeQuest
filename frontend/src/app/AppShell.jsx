@@ -37,13 +37,13 @@ function AppShell() {
     checkSession();
   }, []);
 
-  /* Task created → planning */
+  /* Task created - planning */
   function handleTaskCreated(createdTask) {
     setTask(createdTask);
     setAppState(APP_STATES.PLANNING);
   }
 
-  /* Quests finalized → active */
+  /* Quests finalized - active */
   function handleQuestsFinalized(finalizedQuests) {
     setQuests(finalizedQuests);
     setActiveQuestIndex(0);
@@ -57,7 +57,7 @@ function AppShell() {
     if (nextIndex < quests.length) {
       setActiveQuestIndex(nextIndex);
     } else {
-      /* All quests done → reset */
+      /* All quests done - reset */
       setTask(null);
       setQuests([]);
       setActiveQuestIndex(0);
@@ -65,7 +65,7 @@ function AppShell() {
     }
   }
 
-  /* Abandon quest → back to task input */
+  /* Abandon quest - back to task input */
   function handleAbandonQuest() {
     setTask(null);
     setQuests([]);
@@ -74,21 +74,15 @@ function AppShell() {
   }
 
   /* XP handling */
-  function handleXpEarned(amount) {
+  function handleXpEarned(amount, authoritativeTotalXp) {
     setUser((prevUser) => {
       if (!prevUser) return prevUser;
 
-      if (typeof authorativeTotalXp === "number") {
-      return {
-        ...prevUser,
-        total_xp: authoritativeTotalXp,
-      };
-    }
-    
-        return {
-        ...prevUser,
-        total_xp: prevUser.total_xp + amount,
-      };
+      if (typeof authoritativeTotalXp === "number") {
+        return { ...prevUser, total_xp: authoritativeTotalXp };
+      }
+
+      return { ...prevUser, total_xp: prevUser.total_xp + amount };
     });
 
     setXpFloatAmount(amount);
@@ -114,9 +108,7 @@ function AppShell() {
 
     const timers = completionFeed.map((entry) =>
       setTimeout(() => {
-        setCompletionFeed((prev) =>
-          prev.filter((e) => e.id !== entry.id)
-        );
+        setCompletionFeed((prev) => prev.filter((e) => e.id !== entry.id));
       }, 30000)
     );
 
@@ -152,38 +144,28 @@ function AppShell() {
   function renderStateLayout() {
     switch (appState) {
       case APP_STATES.EMPTY:
-        return (
-          <div className="empty-layout">
-            <div className="task-input-zone">
-              <TaskInput onTaskCreated={handleTaskCreated} />
-            </div>
-          </div>
-        );
+        return <TaskInput onTaskCreated={handleTaskCreated} />;
 
       case APP_STATES.PLANNING:
         return (
-          <div className="planner-layout">
-            <QuestPlanner
-              task={task}
-              onQuestsFinalized={handleQuestsFinalized}
-              onBack={handleAbandonQuest}
-            />
-          </div>
+          <QuestPlanner
+            task={task}
+            onQuestsFinalized={handleQuestsFinalized}
+            onBack={handleAbandonQuest}
+          />
         );
 
       case APP_STATES.ACTIVE:
         return (
-          <div className="active-layout">
-            <ActiveQuest
-              quest={quests[activeQuestIndex]}
-              questIndex={activeQuestIndex}
-              totalQuests={quests.length}
-              onQuestCompleted={handleQuestCompleted}
-              onAbandonQuest={handleAbandonQuest}
-              onXpEarned={handleXpEarned}
-              onCompletionPhrase={handleCompletionPhrase}
-            />
-          </div>
+          <ActiveQuest
+            quest={quests[activeQuestIndex]}
+            questIndex={activeQuestIndex}
+            totalQuests={quests.length}
+            onQuestCompleted={handleQuestCompleted}
+            onAbandonQuest={handleAbandonQuest}
+            onXpEarned={handleXpEarned}
+            onCompletionPhrase={handleCompletionPhrase}
+          />
         );
 
       default:
@@ -192,35 +174,37 @@ function AppShell() {
   }
 
   return (
-    <div>
-      <button className="logout-button" onClick={handleLogout}>
-        LOGOUT
-      </button>
+    <div className="app-root">
+      <header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "1rem 2rem",
+          gap: "1rem",
+        }}
+      >
+        <button onClick={handleLogout}>LOGOUT</button>
 
-      <div className="xp-ledger">
-        XP: {user.total_xp}
-      </div>
+        <div style={{ fontWeight: 600 }}>XP: {user.total_xp}</div>
+      </header>
+
+      <main className="app-main">{renderStateLayout()}</main>
 
       {xpFloatAmount && (
-        <div
-          className="xp-float"
-          onAnimationEnd={() => setXpFloatAmount(null)}
-        >
+        <div className="xp-float" onAnimationEnd={() => setXpFloatAmount(null)}>
           +{xpFloatAmount} XP
         </div>
       )}
 
-      <div className="completion-feed">
-        {completionFeed.map((entry) => (
-          <div key={entry.id} className="completion-line">
-            {entry.text}
-          </div>
-        ))}
-      </div>
-
-      <div className="stage">
-        {renderStateLayout()}
-      </div>
+      {/* Keep phrases */}
+      {completionFeed.length > 0 && (
+        <div style={{ padding: "0 2rem 1rem 2rem" }}>
+          {completionFeed.map((entry) => (
+            <div key={entry.id}>{entry.text}</div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

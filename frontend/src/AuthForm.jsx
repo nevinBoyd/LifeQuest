@@ -1,11 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "./api";
 
-export default function AuthForm({ onAuth }) {
+export default function AuthForm({ mode: initialMode = "login", onAuth }) {
+  const [mode, setMode] = useState(initialMode);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState("login");
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setMode(initialMode);
+    setError(null);
+  }, [initialMode]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -13,30 +18,28 @@ export default function AuthForm({ onAuth }) {
 
     const endpoint = mode === "login" ? "/login" : "/signup";
 
-    const res = await apiFetch(endpoint, {
-      method: "POST",
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const data = await apiFetch(endpoint, {
+        method: "POST",
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (!res.ok) {
+      onAuth(data);
+    } catch (err) {
       setError("Authentication failed");
-      return;
     }
-
-    const data = await res.json();
-    onAuth(data);
   }
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "400px", margin: "0 auto" }}>
-      <h2>{mode === "login" ? "Login" : "Sign Up"}</h2>
+    <div className="auth-form">
+      <h2 className="auth-title">{mode === "login" ? "Login" : "Sign Up"}</h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="auth-fields">
         <input
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          style={{ display: "block", width: "100%", marginBottom: "1rem" }}
+          autoComplete="username"
         />
 
         <input
@@ -44,24 +47,23 @@ export default function AuthForm({ onAuth }) {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{ display: "block", width: "100%", marginBottom: "1rem" }}
+          autoComplete={mode === "login" ? "current-password" : "new-password"}
         />
 
-        <button type="submit">
+        <button type="submit" className="auth-primary">
           {mode === "login" ? "Login" : "Sign Up"}
         </button>
       </form>
 
       <button
-        onClick={() =>
-          setMode(mode === "login" ? "signup" : "login")
-        }
-        style={{ marginTop: "1rem" }}
+        type="button"
+        className="auth-switch"
+        onClick={() => setMode(mode === "login" ? "signup" : "login")}
       >
         Switch to {mode === "login" ? "Sign Up" : "Login"}
       </button>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className="auth-error">{error}</p>}
     </div>
   );
 }

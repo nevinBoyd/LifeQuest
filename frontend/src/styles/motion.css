@@ -84,10 +84,14 @@
 .stage {
   position: fixed;
   inset: 0;
+
   display: flex;
   justify-content: center;
   align-items: center;
+
+  overflow: hidden;
 }
+
 
 /* Quest planner stage */
 .planner-stage {
@@ -156,12 +160,6 @@
   border-radius: 0 8px 8px 0;
 }
 
-/* Core stage container */
-.stage {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-}
 
 /* Rotated texture layer */
 .stage::before {
@@ -188,4 +186,136 @@
 .stage > * {
   position: relative;
   z-index: 2;
+}
+
+/* ===== Landing + Auth (canonical; no duplicates below) ===== */
+
+/* Hard rule: never scroll on landing/auth */
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Idle landing: centered sigil + buttons */
+.landing-gate {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Y center */
+  align-items: center;     /* X center */
+  gap: clamp(1rem, 3vh, 2rem);
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+  box-sizing: border-box;
+}
+
+.landing-actions {
+  width: min(360px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.landing-actions button {
+  width: 100%;
+}
+
+/* Auth overlay */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 9999;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(0, 0, 0, 0.6);
+
+  position: fixed;
+}
+
+/* Sigil behind the square card */
+.auth-sigil-bg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  width: clamp(260px, 42vw, 620px);
+  height: auto;
+
+  opacity: 0.18;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Square blue card on top */
+.auth-card {
+  position: relative;
+  z-index: 2;
+
+  width: min(380px, 88vw);
+  aspect-ratio: 1 / 1;
+  max-height: calc(100dvh - 24px);
+
+  overflow: hidden;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  padding: clamp(1rem, 2vw, 1.35rem);
+  border-radius: 12px;
+
+  background-color: #09111ee6;
+  color: #e6e9ef;
+
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.auth-form {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.auth-title {
+  margin: 0;
+  text-align: left;
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+}
+
+.auth-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.auth-fields input {
+  width: 100%;
+  height: clamp(2.15rem, 4.2vh, 2.5rem);
+  padding: 0 0.75rem;
+  box-sizing: border-box;
+}
+
+.auth-primary,
+.auth-switch {
+  width: 100%;
+  height: clamp(2.15rem, 4.2vh, 2.5rem);
+}
+
+.auth-error {
+  margin: 0;
+  color: #ff6b6b;
+  font-size: 0.95rem;
 }

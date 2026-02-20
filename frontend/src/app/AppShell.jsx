@@ -77,7 +77,15 @@ function AppShell() {
   function handleXpEarned(amount) {
     setUser((prevUser) => {
       if (!prevUser) return prevUser;
+
+      if (typeof authorativeTotalXp === "number") {
       return {
+        ...prevUser,
+        total_xp: authoritativeTotalXp,
+      };
+    }
+    
+        return {
         ...prevUser,
         total_xp: prevUser.total_xp + amount,
       };

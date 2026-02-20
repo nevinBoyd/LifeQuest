@@ -27,7 +27,6 @@ function ActiveQuest({
   const [isCompleting, setIsCompleting] = useState(false);
   const [lastLineIndex, setLastLineIndex] = useState(null);
 
-  // Pick a completion phrase without repeating the last one
   function pickCompletionLine(lines) {
     let index;
     do {
@@ -38,7 +37,6 @@ function ActiveQuest({
     return lines[index];
   }
 
-  // Reset button state when quest changes
   useEffect(() => {
     setIsCompleting(false);
   }, [quest?.id]);
@@ -48,28 +46,31 @@ function ActiveQuest({
 
     setIsCompleting(true);
 
-    const res = await apiFetch(
-      `/quests/${quest.id}/complete`,
-      { method: "POST" }
-    );
-    
-    onXpEarned(quest.base_xp, res.total_xp);
-    
-    if (!res.ok) {
-      console.error("Failed to complete quest");
+    try {
+      const res = await apiFetch(`/quests/${quest.id}/complete`, {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        console.error("Failed to complete quest");
+        return;
+      }
+
+      const data = await res.json();
+
+      const isFinalQuest = questIndex === totalQuests - 1;
+      const lines = isFinalQuest ? MAINQUEST_LINES : SUBQUEST_LINES;
+
+      const phrase = pickCompletionLine(lines);
+      onCompletionPhrase(phrase);
+
+      onXpEarned(quest.base_xp, data.total_xp);
+      onQuestCompleted();
+    } catch (err) {
+      console.error("Failed to complete quest", err);
+    } finally {
       setIsCompleting(false);
-      return;
     }
-
-    const isFinalQuest = questIndex === totalQuests - 1;
-    const lines = isFinalQuest ? MAINQUEST_LINES : SUBQUEST_LINES;
-
-    const phrase = pickCompletionLine(lines);
-    onCompletionPhrase(phrase);
-    onXpEarned(quest.base_xp);
-    onQuestCompleted();
-
-    setIsCompleting(false);
   }
 
   if (!quest) {
@@ -77,38 +78,36 @@ function ActiveQuest({
   }
 
   return (
-    <div className="planner-stage">
-      <div className="planner-card">
-        <div className="card card-selected">
-          <h3>
-            Quest {questIndex + 1} of {totalQuests}
-          </h3>
+    <div className="bridge-card" style={{ width: "100%", maxWidth: "640px" }}>
+      <h3 style={{ marginTop: 0 }}>
+        Quest {questIndex + 1} of {totalQuests}
+      </h3>
 
-          <div
-            style={{
-              minHeight: "120px",
-              maxHeight: "120px",
-              overflowY: "auto",
-              marginBottom: "1rem",
-            }}
-          >
-            {quest.text}
-          </div>
+      <div
+        style={{
+          marginTop: "1rem",
+          marginBottom: "1rem",
+          minHeight: "120px",
+          maxHeight: "120px",
+          overflow: "hidden",
+          opacity: 0.95,
+        }}
+      >
+        {quest.text}
+      </div>
 
-          <button onClick={handleComplete} disabled={isCompleting}>
-            {isCompleting ? "COMPLETING..." : "COMPLETE"}
-          </button>
+      <div style={{ display: "grid", gap: "0.5rem" }}>
+        <button className="bridge-button" onClick={handleComplete} disabled={isCompleting}>
+          {isCompleting ? "COMPLETING..." : "COMPLETE"}
+        </button>
 
-          <button
-            onClick={onAbandonQuest}
-            style={{
-              marginTop: "0.75rem",
-              opacity: 0.7,
-            }}
-          >
-            ABANDON QUEST
-          </button>
-        </div>
+        <button
+          className="bridge-button secondary"
+          onClick={onAbandonQuest}
+          disabled={isCompleting}
+        >
+          ABANDON QUEST
+        </button>
       </div>
     </div>
   );

@@ -1,0 +1,199 @@
+/* temp css during overhaul */
+
+/* Reset */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* App container */
+.app-root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main content area */
+.app-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+/* Simple two-column planner layout */
+.planner-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1100px;
+}
+
+@media (min-width: 900px) {
+  .planner-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Basic card */
+.bridge-card {
+  background: #111827;
+  color: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* Button baseline */
+.bridge-button {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.bridge-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Secondary button */
+.bridge-button.secondary {
+  background: #374151;
+}
+
+/* XP float (keep animation only) */
+@keyframes xp-rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+}
+
+.xp-float {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  animation: xp-rise 1s ease-out forwards;
+}
+
+/* Fullscreen stage */
+.bridge-stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Center landing content */
+.bridge-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  box-sizing: border-box;
+}
+
+/* Landing sigil */
+.bridge-sigil {
+  width: min(420px, 80vw);
+  height: auto;
+  opacity: 0.75;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Landing buttons */
+.bridge-actions {
+  display: grid;
+  gap: 0.75rem;
+  width: min(320px, 92vw);
+}
+
+/* Overlay modal */
+.bridge-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+/* Big sigil behind auth card */
+.bridge-sigil-bg {
+  position: absolute;
+  width: min(540px, 90vw);
+  height: auto;
+  opacity: 0.14;
+  filter: blur(0.2px);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Auth card sizing (square-ish) */
+.bridge-auth-card {
+  width: min(420px, 92vw);
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+}
+
+/* Auth form content */
+.bridge-auth {
+  width: 100%;
+  max-width: 320px;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.bridge-auth-title {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.bridge-auth-form {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.bridge-input {
+  width: 100%;
+  height: 2.6rem;
+  padding: 0 0.75rem;
+  box-sizing: border-box;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.22);
+  color: inherit;
+}
+
+.bridge-error {
+  margin: 0;
+  color: #ff6b6b;
+  font-size: 0.95rem;
+}
+
+.bridge-auth-hint {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}

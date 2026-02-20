@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+:root {
+  --bg: 222 14% 12%;
+  --fg: 210 40% 98%;
+  --card: 222 14% 16%;
+  --card-fg: 210 40% 98%;
+  --muted: 217 19% 24%;
+  --muted-fg: 215 20% 65%;
+  --border: 217 19% 24%;
+  --ring: 215 20% 65%;
+  --primary: 221 83% 53%;
+  --primary-fg: 210 40% 98%;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: hsl(var(--bg));
+  color: hsl(var(--fg));
+}

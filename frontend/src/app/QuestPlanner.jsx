@@ -15,10 +15,9 @@ function QuestPlanner({ task, onQuestsFinalized, onBack }) {
 
   useEffect(() => {
     async function fetchPreviewQuests() {
-      const res = await apiFetch(
-        `/tasks/${task.id}/preview-quests`,
-        { method: "POST" }
-      );
+      const res = await apiFetch(`/tasks/${task.id}/preview-quests`, {
+        method: "POST",
+      });
 
       if (!res.ok) {
         injectDefaults();
@@ -49,9 +48,7 @@ function QuestPlanner({ task, onQuestsFinalized, onBack }) {
     if (isFinalizing) return;
 
     setSelectedQuestIds((prev) =>
-      prev.includes(id)
-        ? prev.filter((qid) => qid !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((qid) => qid !== id) : [...prev, id]
     );
   }
 
@@ -84,17 +81,14 @@ function QuestPlanner({ task, onQuestsFinalized, onBack }) {
 
     setIsFinalizing(true);
 
-    const res = await apiFetch(
-      `/tasks/${task.id}/finalize-quests`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          subtasks: selectedSubtasks,
-          difficulty: "medium",
-          estimated_time: 30,
-        }),
-      }
-    );
+    const res = await apiFetch(`/tasks/${task.id}/finalize-quests`, {
+      method: "POST",
+      body: JSON.stringify({
+        subtasks: selectedSubtasks,
+        difficulty: "medium",
+        estimated_time: 30,
+      }),
+    });
 
     if (!res.ok) {
       console.error("Failed to finalize quests");
@@ -114,94 +108,106 @@ function QuestPlanner({ task, onQuestsFinalized, onBack }) {
   );
 
   return (
-    <div className="planner-stage">
+    <div className="planner-grid">
       {/* Left card — available quests */}
-      <div className={`planner-card left ${isFinalizing ? "merge-left" : ""}`}>
-        <div className="card card-selection">
-          <h3>{task.title}</h3>
+      <div className="bridge-card">
+        <h3 style={{ marginTop: 0 }}>{task.title}</h3>
 
-          <ul className="card-list">
-            {previewQuests.map((quest) => (
-              <li key={quest.id}>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={selectedQuestIds.includes(quest.id)}
-                    onChange={() => toggleQuest(quest.id)}
-                  />
-                  {quest.title}
-                </label>
-              </li>
-            ))}
-          </ul>
+        <ul style={{ listStyle: "none", padding: 0, margin: "1rem 0" }}>
+          {previewQuests.map((quest) => (
+            <li key={quest.id} style={{ marginBottom: "0.5rem" }}>
+              <label style={{ display: "flex", gap: "0.6rem" }}>
+                <input
+                  type="checkbox"
+                  checked={selectedQuestIds.includes(quest.id)}
+                  onChange={() => toggleQuest(quest.id)}
+                  disabled={isFinalizing}
+                />
+                <span>{quest.title}</span>
+              </label>
+            </li>
+          ))}
+        </ul>
 
-          {/* Add custom quest */}
-          <div style={{ marginTop: "1rem" }}>
-            <input
-              type="text"
-              value={customQuestText}
-              placeholder="Add a custom quest"
-              onChange={(e) => setCustomQuestText(e.target.value)}
-            />
+        <div style={{ display: "grid", gap: "0.5rem" }}>
+          <input
+            type="text"
+            value={customQuestText}
+            placeholder="Add a custom quest"
+            onChange={(e) => setCustomQuestText(e.target.value)}
+            disabled={isFinalizing}
+            style={{
+              width: "100%",
+              padding: "0.6rem 0.75rem",
+              borderRadius: "8px",
+              border: "1px solid rgba(255,255,255,0.15)",
+              background: "rgba(0,0,0,0.2)",
+              color: "inherit",
+              boxSizing: "border-box",
+            }}
+          />
 
-            <button
-              type="button"
-              onClick={handleAddCustomQuest}
-              style={{ marginTop: "0.5rem", width: "100%" }}
-            >
-              Add Quest
-            </button>
+          <button
+            type="button"
+            className="bridge-button secondary"
+            onClick={handleAddCustomQuest}
+            disabled={isFinalizing}
+          >
+            Add Quest
+          </button>
 
-            {/* Go back to task input */}
-            <button
-              type="button"
-              onClick={onBack}
-              style={{ marginTop: "0.5rem", width: "100%" }}
-            >
-              Go Back
-            </button>
-          </div>
+          <button
+            type="button"
+            className="bridge-button secondary"
+            onClick={onBack}
+            disabled={isFinalizing}
+          >
+            Go Back
+          </button>
         </div>
       </div>
 
       {/* Right card — selected quests */}
-      <div className={`planner-card right ${isFinalizing ? "merge-right" : ""}`}>
-        <div className="card card-selected">
-          <h3>Selected</h3>
+      <div className="bridge-card">
+        <h3 style={{ marginTop: 0 }}>Selected</h3>
 
-          <ul className="card-list">
-            {selectedQuests.length === 0 ? (
-              <li>No quests selected yet</li>
-            ) : (
-              selectedQuests.map((quest) => (
-                <li
-                  key={quest.id}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
+        <ul style={{ listStyle: "none", padding: 0, margin: "1rem 0" }}>
+          {selectedQuests.length === 0 ? (
+            <li style={{ opacity: 0.8 }}>No quests selected yet</li>
+          ) : (
+            selectedQuests.map((quest) => (
+              <li
+                key={quest.id}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                  marginBottom: "0.6rem",
+                }}
+              >
+                <span style={{ flex: 1 }}>{quest.title}</span>
+                <button
+                  type="button"
+                  className="bridge-button secondary"
+                  onClick={() => removeSelectedQuest(quest.id)}
+                  disabled={isFinalizing}
+                  style={{ width: "auto", padding: "0.4rem 0.6rem" }}
                 >
-                  <span>{quest.title}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeSelectedQuest(quest.id)}
-                  >
-                    Remove
-                  </button>
-                </li>
-              ))
-            )}
-          </ul>
+                  Remove
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
 
-          <button
-            onClick={handleFinalize}
-            disabled={isFinalizing}
-            style={{ marginTop: "1rem" }}
-          >
-            {isFinalizing ? "Finalizing..." : "Finalize"}
-          </button>
-        </div>
+        <button
+          className="bridge-button"
+          onClick={handleFinalize}
+          disabled={isFinalizing || selectedQuests.length === 0}
+        >
+          {isFinalizing ? "Finalizing..." : "Finalize"}
+        </button>
       </div>
     </div>
   );

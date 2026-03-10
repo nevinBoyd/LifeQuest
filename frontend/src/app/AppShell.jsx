@@ -23,41 +23,49 @@ function AppShell() {
   const [quests, setQuests] = useState([]);
   const [activeQuestIndex, setActiveQuestIndex] = useState(0);
 
-  /* Session check */
+  // Check session on app load
   useEffect(() => {
     async function checkSession() {
-      const res = await apiFetch("/me");
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data);
+      try {
+        const res = await apiFetch("/me");
+
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Session check failed:", error);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     checkSession();
   }, []);
 
-  /* Task created - planning */
+  // Handle task created
   function handleTaskCreated(createdTask) {
     setTask(createdTask);
     setAppState(APP_STATES.PLANNING);
   }
 
-  /* Quests finalized - active */
+  // Handle quests finalized
   function handleQuestsFinalized(finalizedQuests) {
     setQuests(finalizedQuests);
     setActiveQuestIndex(0);
     setAppState(APP_STATES.ACTIVE);
   }
 
-  /* Quest completed */
+  // Handle quest completed
   function handleQuestCompleted() {
     const nextIndex = activeQuestIndex + 1;
 
     if (nextIndex < quests.length) {
       setActiveQuestIndex(nextIndex);
     } else {
-      /* All quests done - reset */
       setTask(null);
       setQuests([]);
       setActiveQuestIndex(0);
@@ -65,7 +73,7 @@ function AppShell() {
     }
   }
 
-  /* Abandon quest - back to task input */
+  // Handle abandon quest
   function handleAbandonQuest() {
     setTask(null);
     setQuests([]);
@@ -73,7 +81,7 @@ function AppShell() {
     setAppState(APP_STATES.EMPTY);
   }
 
-  /* XP handling */
+  // Handle XP earned
   function handleXpEarned(amount, authoritativeTotalXp) {
     setUser((prevUser) => {
       if (!prevUser) return prevUser;
@@ -82,13 +90,13 @@ function AppShell() {
         return { ...prevUser, total_xp: authoritativeTotalXp };
       }
 
-      return { ...prevUser, total_xp: prevUser.total_xp + amount };
+      return { ...prevUser, total_xp: (prevUser.total_xp ?? 0) + amount };
     });
 
     setXpFloatAmount(amount);
   }
 
-  /* Completion phrases */
+  // Handle completion phrase
   function handleCompletionPhrase(text) {
     const entry = {
       id: crypto.randomUUID(),
@@ -102,7 +110,7 @@ function AppShell() {
     });
   }
 
-  /* Auto-expire phrases */
+  // Auto-expire completion phrases
   useEffect(() => {
     if (completionFeed.length === 0) return;
 
@@ -115,11 +123,17 @@ function AppShell() {
     return () => timers.forEach(clearTimeout);
   }, [completionFeed]);
 
-  /* Logout */
+  // Handle logout
   async function handleLogout() {
-    const res = await apiFetch("/logout", { method: "POST" });
-    if (!res.ok) {
-      console.error("Logout failed");
+    try {
+      const res = await apiFetch("/logout", { method: "POST" });
+
+      if (!res.ok) {
+        console.error("Logout failed");
+        return;
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
       return;
     }
 
@@ -128,19 +142,11 @@ function AppShell() {
     setQuests([]);
     setActiveQuestIndex(0);
     setCompletionFeed([]);
+    setXpFloatAmount(null);
     setAppState(APP_STATES.EMPTY);
   }
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  /* Unauthenticated */
-  if (!user) {
-    return <LandingGate onAuth={setUser} />;
-  }
-
-  /* State-based layout */
+  // Render state layout
   function renderStateLayout() {
     switch (appState) {
       case APP_STATES.EMPTY:
@@ -173,33 +179,56 @@ function AppShell() {
     }
   }
 
-  return (
-    <div className="app-root">
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "1rem 2rem",
-          gap: "1rem",
-        }}
-      >
-        <button onClick={handleLogout}>LOGOUT</button>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
 
-        <div style={{ fontWeight: 600 }}>XP: {user.total_xp}</div>
+  if (!user) {
+    return <LandingGate onAuth={setUser} />;
+  }
+
+  return (
+    <div className="app-root min-h-screen bg-slate-950 text-white flex flex-col">
+      <header className="fixed top-0 left-0 right-0 h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 z-50">
+        <div className="text-lg font-semibold tracking-wide">LifeQuest</div>
+
+        <div className="flex items-center gap-6">
+          <div className="text-sm text-slate-300">
+            XP:{" "}
+            <span className="font-semibold text-amber-400">
+              {user?.total_xp ?? 0}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="text-sm text-slate-300 hover:text-white transition"
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
-      <main className="app-main">{renderStateLayout()}</main>
+      <main className="app-main flex-1 pt-20 px-4">
+        <div className="max-w-3xl mx-auto w-full">{renderStateLayout()}</div>
+      </main>
 
       {xpFloatAmount && (
-        <div className="xp-float" onAnimationEnd={() => setXpFloatAmount(null)}>
+        <div
+          className="xp-float"
+          onAnimationEnd={() => setXpFloatAmount(null)}
+        >
           +{xpFloatAmount} XP
         </div>
       )}
 
-      {/* Keep phrases */}
       {completionFeed.length > 0 && (
-        <div style={{ padding: "0 2rem 1rem 2rem" }}>
+        <div className="px-6 pb-4">
           {completionFeed.map((entry) => (
             <div key={entry.id}>{entry.text}</div>
           ))}

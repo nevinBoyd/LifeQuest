@@ -1,3 +1,5 @@
+import re
+
 INTENT_REGISTRY = {
     "clean": [
         "clean",
@@ -56,24 +58,26 @@ ACTION_REGISTRY = {
     ]
 }
 
+def phrase_in_text(text: str, phrase: str) -> bool:
+    pattern = r"\b" + re.escape(phrase.lower()) + r"\b"
+    return re.search(pattern, text) is not None
 
 def detect_intent(task_text: str) -> str:
     text = task_text.lower()
 
     for intent, phrases in INTENT_REGISTRY.items():
         for phrase in phrases:
-            if phrase in text:
+            if phrase_in_text(text, phrase):
                 return intent
 
     return "generic"
-
 
 def detect_action(task_text: str) -> str | None:
     text = task_text.lower()
 
     for action, phrases in ACTION_REGISTRY.items():
         for phrase in phrases:
-            if phrase in text:
+            if phrase_in_text(text, phrase):
                 return action
 
     return None

@@ -104,10 +104,63 @@ def detect_context(task_text: str) -> str:
         return "test"
     return "generic"
 
+
 # RAW SUBTASK GENERATION
 
 def suggest_time_for_intent(intent: str | None) -> int:
     return DEFAULT_INTENT_TIMES.get(intent, 20)
+
+def ensure_task_coverage(task_text: str, subtasks: list[str]) -> list[str]:
+    text = task_text.lower()
+    steps = list(subtasks)
+    lowered = [step.lower() for step in steps]
+
+    def has_any(words: list[str]) -> bool:
+        return any(any(word in step for word in words) for step in lowered)
+
+    def add_start(step: str) -> None:
+        if step.lower() not in lowered:
+            steps.insert(0, step)
+            lowered.insert(0, step.lower())
+
+    def add_end(step: str) -> None:
+        if step.lower() not in lowered:
+            steps.append(step)
+            lowered.append(step.lower())
+
+    if "laundry" in text or "clothes" in text:
+        if not has_any(["sort", "load", "detergent", "washer"]):
+            add_start("Sort clothes by color")
+        if not has_any(["dryer", "dry"]):
+            add_end("Move clothes to dryer")
+        if not has_any(["fold", "hang", "put away", "closet"]):
+            add_end("Fold clean clothes")
+
+    if "room" in text or "bedroom" in text:
+        if not has_any(["trash", "pick up", "dishes"]):
+            add_start("Pick up trash")
+        if not has_any(["bed", "dust"]):
+            add_end("Make the bed")
+        if not has_any(["vacuum", "sweep", "floor"]):
+            add_end("Vacuum or sweep the floor")
+
+    if "dishes" in text or "dishwasher" in text or "sink" in text:
+        if not has_any(["gather", "collect", "bring"]):
+            add_start("Gather dirty dishes")
+        if not has_any(["wash", "load", "dishwasher", "scrub", "rinse"]):
+            add_end("Wash or load dirty dishes")
+        if not has_any(["dry", "put away", "rack"]):
+            add_end("Put clean dishes away")
+
+    if "desk" in text:
+        if not has_any(["trash", "papers"]):
+            add_start("Throw away trash and old papers")
+        if not has_any(["sort", "pile", "group"]):
+            add_end("Sort important papers into piles")
+        if not has_any(["wipe", "clean surface"]):
+            add_end("Wipe down the desk surface")
+
+    return steps
 
 def generate_raw_subtasks(task_text: str) -> list[str]:
     domain = detect_domain(task_text)
@@ -121,7 +174,7 @@ def generate_raw_subtasks(task_text: str) -> list[str]:
         if inferred_domain:
             domain = inferred_domain
 
-    # Domain + action (most specific)
+    # Domain + action
     if domain in DOMAIN_TEMPLATE_MAP:
         template = DOMAIN_TEMPLATE_MAP[domain]
 
@@ -226,6 +279,7 @@ def build_initial_quest_plan(task_text: str):
     domain = detect_domain(task_text)
 
     subtasks = generate_raw_subtasks(task_text)
+    subtasks = ensure_task_coverage(task_text, subtasks)
     step_count = len(subtasks)
 
     suggested_difficulty = suggest_difficulty_from_steps(intent, step_count)

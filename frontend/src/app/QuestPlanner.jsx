@@ -108,108 +108,128 @@ function QuestPlanner({ task, onQuestsFinalized, onBack }) {
   );
 
   return (
-    <div className="planner-grid">
-      {/* Left card — available quests */}
-      <div className="bridge-card">
-        <h3 style={{ marginTop: 0 }}>{task.title}</h3>
+    <section className="w-full max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-fg))] shadow-xl">
+          <div className="border-b border-[hsl(var(--border))] px-6 py-5">
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-[hsl(var(--muted-fg))]">
+              Quest planner
+            </p>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight">
+              {task.title}
+            </h2>
+            <p className="mt-2 text-sm text-[hsl(var(--muted-fg))]">
+              Select the steps you want to turn into active quests.
+            </p>
+          </div>
 
-        <ul style={{ listStyle: "none", padding: 0, margin: "1rem 0" }}>
-          {previewQuests.map((quest) => (
-            <li key={quest.id} style={{ marginBottom: "0.5rem" }}>
-              <label style={{ display: "flex", gap: "0.6rem" }}>
-                <input
-                  type="checkbox"
-                  checked={selectedQuestIds.includes(quest.id)}
-                  onChange={() => toggleQuest(quest.id)}
-                  disabled={isFinalizing}
-                />
-                <span>{quest.title}</span>
-              </label>
-            </li>
-          ))}
-        </ul>
+          <div className="px-6 py-6">
+            <ul className="space-y-3">
+              {previewQuests.map((quest) => (
+                <li key={quest.id}>
+                  <label className="flex items-start gap-3 rounded-xl border border-[hsl(var(--border))] bg-black/10 px-4 py-3 transition hover:bg-black/20">
+                    <input
+                      type="checkbox"
+                      checked={selectedQuestIds.includes(quest.id)}
+                      onChange={() => toggleQuest(quest.id)}
+                      disabled={isFinalizing}
+                      className="mt-1 h-4 w-4 rounded border-[hsl(var(--border))] bg-transparent"
+                    />
+                    <span className="text-sm leading-6">{quest.title}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
 
-        <div style={{ display: "grid", gap: "0.5rem" }}>
-          <input
-            type="text"
-            value={customQuestText}
-            placeholder="Add a custom quest"
-            onChange={(e) => setCustomQuestText(e.target.value)}
-            disabled={isFinalizing}
-            style={{
-              width: "100%",
-              padding: "0.6rem 0.75rem",
-              borderRadius: "8px",
-              border: "1px solid rgba(255,255,255,0.15)",
-              background: "rgba(0,0,0,0.2)",
-              color: "inherit",
-              boxSizing: "border-box",
-            }}
-          />
+            <div className="mt-6 grid gap-3">
+              <input
+                type="text"
+                value={customQuestText}
+                placeholder="Add a custom quest"
+                onChange={(e) => setCustomQuestText(e.target.value)}
+                disabled={isFinalizing}
+                className="h-11 w-full rounded-xl border border-[hsl(var(--border))] bg-black/20 px-4 text-sm text-[hsl(var(--fg))] outline-none transition focus:border-[hsl(var(--ring))] focus:ring-2 focus:ring-[hsl(var(--ring))]/40 disabled:opacity-60"
+              />
 
-          <button
-            type="button"
-            className="bridge-button secondary"
-            onClick={handleAddCustomQuest}
-            disabled={isFinalizing}
-          >
-            Add Quest
-          </button>
-
-          <button
-            type="button"
-            className="bridge-button secondary"
-            onClick={onBack}
-            disabled={isFinalizing}
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-
-      {/* Right card — selected quests */}
-      <div className="bridge-card">
-        <h3 style={{ marginTop: 0 }}>Selected</h3>
-
-        <ul style={{ listStyle: "none", padding: 0, margin: "1rem 0" }}>
-          {selectedQuests.length === 0 ? (
-            <li style={{ opacity: 0.8 }}>No quests selected yet</li>
-          ) : (
-            selectedQuests.map((quest) => (
-              <li
-                key={quest.id}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  marginBottom: "0.6rem",
-                }}
-              >
-                <span style={{ flex: 1 }}>{quest.title}</span>
+              <div className="grid gap-3 sm:grid-cols-2">
                 <button
                   type="button"
-                  className="bridge-button secondary"
-                  onClick={() => removeSelectedQuest(quest.id)}
+                  onClick={handleAddCustomQuest}
                   disabled={isFinalizing}
-                  style={{ width: "auto", padding: "0.4rem 0.6rem" }}
+                  className="inline-flex h-11 items-center justify-center rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted))] px-4 text-sm font-medium text-[hsl(var(--fg))] transition hover:opacity-95 active:opacity-90 disabled:opacity-60"
                 >
-                  Remove
+                  Add Quest
                 </button>
-              </li>
-            ))
-          )}
-        </ul>
 
-        <button
-          className="bridge-button"
-          onClick={handleFinalize}
-          disabled={isFinalizing || selectedQuests.length === 0}
-        >
-          {isFinalizing ? "Finalizing..." : "Finalize"}
-        </button>
+                <button
+                  type="button"
+                  onClick={onBack}
+                  disabled={isFinalizing}
+                  className="inline-flex h-11 items-center justify-center rounded-xl border border-[hsl(var(--border))] bg-transparent px-4 text-sm font-medium text-[hsl(var(--muted-fg))] transition hover:bg-white/5 hover:text-[hsl(var(--fg))] active:opacity-90 disabled:opacity-60"
+                >
+                  Go Back
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-fg))] shadow-xl">
+          <div className="border-b border-[hsl(var(--border))] px-6 py-5">
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-[hsl(var(--muted-fg))]">
+              Selected
+            </p>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight">
+              Quest loadout
+            </h2>
+            <p className="mt-2 text-sm text-[hsl(var(--muted-fg))]">
+              Finalize the quests you want to run.
+            </p>
+          </div>
+
+          <div className="px-6 py-6">
+            {selectedQuests.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-[hsl(var(--border))] bg-black/10 px-4 py-6 text-sm text-[hsl(var(--muted-fg))]">
+                No quests selected yet.
+              </div>
+            ) : (
+              <ul className="space-y-3">
+                {selectedQuests.map((quest) => (
+                  <li
+                    key={quest.id}
+                    className="flex items-start justify-between gap-3 rounded-xl border border-[hsl(var(--border))] bg-black/10 px-4 py-3"
+                  >
+                    <span className="flex-1 text-sm leading-6">
+                      {quest.title}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => removeSelectedQuest(quest.id)}
+                      disabled={isFinalizing}
+                      className="inline-flex h-9 items-center justify-center rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] px-3 text-xs font-medium text-[hsl(var(--fg))] transition hover:opacity-95 active:opacity-90 disabled:opacity-60"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={handleFinalize}
+                disabled={isFinalizing || selectedQuests.length === 0}
+                className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-[hsl(var(--primary))] px-4 text-sm font-semibold text-[hsl(var(--primary-fg))] transition hover:opacity-95 active:opacity-90 disabled:opacity-60"
+              >
+                {isFinalizing ? "Finalizing..." : "Finalize"}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 

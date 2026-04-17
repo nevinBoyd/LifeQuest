@@ -90,13 +90,11 @@ The UI deliberately reuses the same card dimensions and spatial layout across di
 
 ## Reflection
 
-This project did not end up matching the original pitch, and that is on me.
+This project evolved from the original pitch due to time constraints and technical challenges encountered during development.
 
-I procrastinated longer than I should have on finishing the project and did not give myself enough runway to fully execute the vision I initially proposed. When I ran into a prolonged authentication error loop, a significant amount of time was spent stabilizing the application rather than refining features or polish. At that point, the priority shifted to getting the app into a functional, presentable state instead of expanding scope.
+A significant portion of time was spent resolving an authentication issue, which shifted focus toward stabilizing core functionality rather than expanding features or refining polish. In hindsight, adjusting the project scope earlier would have allowed for a more efficient alignment between the original vision and the final implementation.
 
-In hindsight, the correct move would have been to rescope the pitch earlier and realign expectations with the constraints I was actually working under. Instead, I held onto parts of the original idea longer than was realistic given the time remaining.
-
-That said, the application does meet the core technical requirements of the assignment, and the process surfaced practical lessons around state ownership, authentication flow, and knowing when to simplify rather than push forward blindly.
+Despite these changes, the application meets the core technical requirements and functions as intended. The process reinforced practical lessons in state management, authentication flow, and the importance of scoping effectively when working within time constraints.
 
 ---
 

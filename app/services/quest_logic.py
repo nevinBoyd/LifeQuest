@@ -1,3 +1,6 @@
+import os
+import json
+from openai import OpenAI
 from .intent_registry import detect_intent, detect_action
 from .domain_registry import detect_domain
 from .domain_templates import DOMAIN_TEMPLATE_MAP
@@ -162,35 +165,77 @@ def ensure_task_coverage(task_text: str, subtasks: list[str]) -> list[str]:
 
     return steps
 
+def generate_raw_subtasks_ai(task_text: str) -> list[str] | None:
+    """Call OpenAI to generate subtasks. Returns None if unavailable or on error."""
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        return None
+
+    try:
+        client = OpenAI(api_key=api_key)
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a productivity assistant. When given a task, break it into "
+                        "3 to 6 clear, specific, actionable steps. "
+                        "Return ONLY a JSON array of strings — no explanation, no markdown, no extra text. "
+                        "Example: [\"Step one\", \"Step two\", \"Step three\"]"
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": f"Task: {task_text}",
+                },
+            ],
+            temperature=0.4,
+            max_tokens=300,
+        )
+
+        raw = response.choices[0].message.content.strip()
+        subtasks = json.loads(raw)
+
+        if isinstance(subtasks, list) and all(isinstance(s, str) for s in subtasks):
+            return subtasks
+
+    except Exception:
+        pass
+
+    return None
+
+
 def generate_raw_subtasks(task_text: str) -> list[str]:
+    # Try OpenAI first
+    ai_result = generate_raw_subtasks_ai(task_text)
+    if ai_result:
+        return ai_result
+
+    # Fallback: keyword-based templates
     domain = detect_domain(task_text)
     intent = detect_intent(task_text)
     action = detect_action(task_text)
     context = detect_context(task_text)
 
-    # Fallback: infer domain from intent if domain not detected
     if not domain:
         inferred_domain = infer_domain_from_intent(intent)
         if inferred_domain:
             domain = inferred_domain
 
-    # Domain + action
     if domain in DOMAIN_TEMPLATE_MAP:
         template = DOMAIN_TEMPLATE_MAP[domain]
-
         if action and action in template:
             return template[action]
-
         if "full" in template:
             return template["full"]
 
-    # Intent + context fallback
     if intent in QUEST_CATEGORIES:
         ctx_map = QUEST_CATEGORIES[intent]
         if context in ctx_map:
             return ctx_map[context]
 
-    # Absolute fallback
     return [
         f"Break '{task_text}' into smaller pieces",
         f"Do the simplest first step of '{task_text}'",

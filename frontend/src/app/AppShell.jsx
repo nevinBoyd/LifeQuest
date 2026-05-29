@@ -192,7 +192,7 @@ function AppShell() {
   }
 
   return (
-    <div className="app-root min-h-screen bg-slate-950 text-white flex flex-col">
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
       <header className="fixed top-0 left-0 right-0 h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 z-50">
         <div className="text-lg font-semibold tracking-wide">LifeQuest</div>
 
@@ -214,13 +214,13 @@ function AppShell() {
         </div>
       </header>
 
-      <main className="app-main flex-1 pt-20 px-4">
+      <main className="flex-1 pt-20 px-4">
         <div className="max-w-3xl mx-auto w-full">{renderStateLayout()}</div>
       </main>
 
       {xpFloatAmount && (
         <div
-          className="xp-float"
+          className="xp-float font-bold text-lg text-amber-400"
           onAnimationEnd={() => setXpFloatAmount(null)}
         >
           +{xpFloatAmount} XP
@@ -228,9 +228,11 @@ function AppShell() {
       )}
 
       {completionFeed.length > 0 && (
-        <div className="px-6 pb-4">
+        <div className="fixed left-6 bottom-24 w-[min(90vw,420px)] pointer-events-none z-10">
           {completionFeed.map((entry) => (
-            <div key={entry.id}>{entry.text}</div>
+            <div key={entry.id} className="completion-line mb-3 text-slate-300 text-sm leading-snug">
+              {entry.text}
+            </div>
           ))}
         </div>
       )}

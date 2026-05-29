@@ -48,4 +48,8 @@ def create_app():
     app.register_blueprint(quests_bp)
     app.register_blueprint(auth_bp)
 
+    # Auto-create tables in dev (no migrations needed)
+    with app.app_context():
+        db.create_all()
+
     return app

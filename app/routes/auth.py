@@ -45,7 +45,7 @@ def login():
 @auth_bp.post("/logout")
 def logout():
     logout_user()
-    return jsonify({"message": "logged out"}), 204
+    return jsonify({"message": "logged out"}), 200
 
 # GET /me
 @auth_bp.get("/me")

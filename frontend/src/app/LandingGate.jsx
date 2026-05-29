@@ -52,7 +52,7 @@ export default function LandingGate({ onAuth }) {
           />
 
           <div
-            className="relative w-[min(420px,92vw)] aspect-square rounded-xl bg-[hsl(var(--card))]/90 text-[hsl(var(--card-fg))] border border-[hsl(var(--border))] shadow-xl p-6 flex items-center"
+            className="modal-rise relative w-[min(420px,92vw)] aspect-square rounded-xl bg-[hsl(var(--card))]/90 text-[hsl(var(--card-fg))] border border-[hsl(var(--border))] shadow-xl p-6 flex items-center"
             onClick={(e) => e.stopPropagation()}
           >
             <AuthForm mode={mode} onAuth={onAuth} />

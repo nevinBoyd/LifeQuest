@@ -1,6 +1,6 @@
 # LifeQuest
 
-LifeQuest is a productivity-focused full-stack application designed to help break a single task into smaller, manageable “quests.” Instead of presenting productivity as a checklist, the app reframes progress as a structured sequence with feedback, completion messaging, and experience points (XP) to reinforce momentum.
+LifeQuest is a productivity-focused full-stack application designed to help break a single task into smaller, manageable "quests." Instead of presenting productivity as a checklist, the app reframes progress as a structured sequence with feedback, completion messaging, and experience points (XP) to reinforce momentum.
 
 The core idea is simple: enter a task, review or customize suggested sub-quests, complete them one by one, and reset cleanly when finished.
 
@@ -12,45 +12,38 @@ The core idea is simple: enter a task, review or customize suggested sub-quests,
 
 * React
 * Vite
-* CSS (custom layout and animation system)
+* Tailwind CSS v4
 
 ### Backend
 
 * Flask
-* PostgreSQL
-* SQLAlchemy
+* PostgreSQL (production) / SQLite (local development)
+* SQLAlchemy + Flask-Migrate
 * Flask-Login (session-based authentication)
+
+### Deployment
+
+* Frontend — Netlify
+* Backend — Render
 
 ### Other
 
 * RESTful API design
 * Cookie-based sessions (no JWTs)
-
----
-
-## Why `flask run` Instead of `run.py`
-
-The application uses `flask run` instead of a custom `run.py` script to align with modern Flask best practices and reduce environment inconsistencies.
-
-Using `flask run`:
-
-* Ensures environment variables are respected consistently
-* Prevents accidental execution differences between development and deployment
-* Matches how Flask is documented and expected to be run in production-adjacent workflows
-
-Earlier experimentation with `run.py` introduced unnecessary friction, especially during authentication debugging, so the project was standardized on `flask run` for stability and clarity.
+* Vite proxy in development to handle same-origin session cookies
 
 ---
 
 ## Core Functionality
 
 * User signup, login, and logout (session-based authentication)
+* Persistent XP tied to each user account
 * Ownership-restricted data access (users can only access their own records)
 * Task creation
 * Automatic or fallback sub-quest generation
 * Manual addition and removal of sub-quests
-* Full CRUD for tasks and quests
 * Quest completion flow with XP rewards
+* Completion feed with MMO-style message display
 * Ability to abandon a task and return to task input
 * Clean reset after all quests are completed
 
@@ -61,12 +54,14 @@ Earlier experimentation with `run.py` introduced unnecessary friction, especiall
 ### Backend
 
 ```bash
-pipenv install
-pipenv shell
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
 export FLASK_APP=app
-flask db upgrade
 flask run
 ```
+
+Tables are created automatically on first run. No migration commands are needed for local development.
 
 ### Frontend
 
@@ -76,7 +71,7 @@ npm install
 npm run dev
 ```
 
-The frontend runs on Vite’s development server and communicates with the Flask backend through the API layer.
+The frontend runs on Vite's dev server at `localhost:5173`. All API calls are proxied through Vite to the Flask backend at `127.0.0.1:5000`, which keeps session cookies same-origin and avoids cross-origin authentication issues during development.
 
 ---
 
@@ -84,17 +79,30 @@ The frontend runs on Vite’s development server and communicates with the Flask
 
 The application was built with a strong emphasis on clear state ownership and UI consistency. A single top-level shell controls authentication state and application flow, while smaller components are responsible for individual stages such as task entry, planning, and active quest progression.
 
-The UI deliberately reuses the same card dimensions and spatial layout across different stages to avoid visual “teleporting” and to maintain continuity as users move through the app.
+The UI deliberately reuses the same card dimensions and spatial layout across different stages to avoid visual "teleporting" and to maintain continuity as users move through the app.
 
 ---
 
-## Reflection
+## Deployment
 
-This project evolved from the original pitch due to time constraints and technical challenges encountered during development.
+The backend is hosted on Render as a web service using Gunicorn. The frontend is hosted on Netlify as a static build. In production, the frontend communicates with the backend directly via the `VITE_API_URL` environment variable rather than through a proxy.
 
-A significant portion of time was spent resolving an authentication issue, which shifted focus toward stabilizing core functionality rather than expanding features or refining polish. In hindsight, adjusting the project scope earlier would have allowed for a more efficient alignment between the original vision and the final implementation.
+The following environment variables are required:
 
-Despite these changes, the application meets the core technical requirements and functions as intended. The process reinforced practical lessons in state management, authentication flow, and the importance of scoping effectively when working within time constraints.
+**Backend (Render)**
+
+| Variable | Description |
+|----------|-------------|
+| `SECRET_KEY` | Flask session secret key |
+| `DATABASE_URL` | PostgreSQL connection string (provided by Render) |
+| `FLASK_ENV` | Set to `production` |
+| `FRONTEND_URL` | Netlify URL for CORS allowlist |
+
+**Frontend (Netlify)**
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_API_URL` | Render backend URL |
 
 ---
 
@@ -102,15 +110,7 @@ Despite these changes, the application meets the core technical requirements and
 
 If continued, future versions of LifeQuest would include:
 
-* AI-assisted task and sub-quest generation to remove reliance on preset defaults
 * XP-based unlocks tied to themes, personas, or UI elements
 * Optional personas that influence tone, quest phrasing, or feedback
 * Expanded analytics or progress summaries over time
 * Additional polish around onboarding and visual transitions
-
----
-
-## Final Notes
-
-LifeQuest represents a realistic snapshot of a project built under pressure rather than an idealized demo. While it does not fully realize the original pitch, it demonstrates full-stack architecture, authentication, relational data handling, and a coherent user flow from end to end.
-

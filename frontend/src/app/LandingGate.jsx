@@ -15,7 +15,7 @@ export default function LandingGate({ onAuth }) {
       <img
         src={sigil}
         alt="LifeQuest Sigil"
-        className="pointer-events-none select-none opacity-25 w-40 sm:w-56 md:w-64"
+        className="pointer-events-none select-none opacity-75 w-[min(90vw,90vh)]"
       />
 
       {/* Idle actions (no card visible) */}

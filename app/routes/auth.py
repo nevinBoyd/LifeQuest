@@ -25,7 +25,7 @@ def signup():
     db.session.commit()
 
     login_user(user)
-    return jsonify({"id": user.id, "username": user.username}), 201
+    return jsonify({"id": user.id, "username": user.username, "total_xp": user.total_xp}), 201
 
 # POST /login
 @auth_bp.post("/login")
@@ -39,7 +39,7 @@ def login():
         return jsonify({"error": "invalid credentials"}), 401
 
     login_user(user)
-    return jsonify({"id": user.id, "username": user.username}), 200
+    return jsonify({"id": user.id, "username": user.username, "total_xp": user.total_xp}), 200
 
 # POST /logout
 @auth_bp.post("/logout")

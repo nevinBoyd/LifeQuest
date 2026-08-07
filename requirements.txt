@@ -17,4 +17,4 @@ Flask-Login==0.6.3
 gunicorn==21.2.0
 openai==1.35.0
 python-dotenv==1.0.1
-psycopg2-binary==2.9.9
+psycopg2-binary
